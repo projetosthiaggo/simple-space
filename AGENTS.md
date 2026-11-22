@@ -28,3 +28,5 @@ use the editor.
   own key and store it in Secrets.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
 <!-- LOVABLE:END -->
+
+- Call admin reordering hooks once at component top level, before access guards; section switches and list lengths must not change React's hook order.

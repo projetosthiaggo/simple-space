@@ -104,7 +104,7 @@ const ROTULO_MODO: Record<ModoExibicao, string> = {
  * O estado (ordem) vive no pai; ao arrastar e largar sobre um item, a ordem
  * é recalculada e repassada ao pai via `aoReordenar`.
  */
-function usarReordenacao<T extends { id: string }>(
+function useReordenacao<T extends { id: string }>(
   itens: T[],
   aoReordenar: (nova: T[]) => void,
 ) {
@@ -223,6 +223,16 @@ function classeTamanho(tamanho: number, modo: ModoExibicao): string {
 }
 
 export const Route = createFileRoute("/admin")({
+  head: () => ({
+    meta: [
+      { title: "Administração | ProxiPro AI" },
+      { name: "description", content: "Painel de administração da ProxiPro AI para gerir profissionais, pedidos e conteúdos da plataforma." },
+      { property: "og:title", content: "Administração | ProxiPro AI" },
+      { property: "og:description", content: "Gestão de profissionais, pedidos e conteúdos na ProxiPro AI." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
   component: Admin,
 });
 
@@ -501,11 +511,15 @@ function Admin() {
       ordemBeneficios,
     });
   };
-  const propsCategorias = usarReordenacao<{ id: string }>(
+  const propsResumo = useReordenacao(
+    ordemResumo.map((id) => ({ id: String(id) })),
+    (nova) => setOrdemResumo(nova.map((item) => Number(item.id))),
+  );
+  const propsCategorias = useReordenacao<{ id: string }>(
     ordemCategoriasPagina.map((id) => ({ id })),
     (nova) => setOrdemCategoriasPagina(nova.map((c) => c.id as CategoryId)),
   );
-  const propsBeneficios = usarReordenacao<{ id: string }>(
+  const propsBeneficios = useReordenacao<{ id: string }>(
     ordemBeneficios.map((b) => ({ id: b })),
     (nova) => setOrdemBeneficios(nova.map((b) => b.id)),
   );
@@ -780,12 +794,7 @@ function Admin() {
               >
                 {ordemResumo.map((idx) => {
                   const c = cardsResumo[idx];
-                  const arrastar = usarReordenacao(
-                    ordemResumo.map((o) => ({ id: String(o) })),
-                    (nova) =>
-                      setOrdemResumo(nova.map((n) => Number(n.id))),
-                  );
-                  const propsDrag = arrastar(String(idx), String(idx));
+                  const propsDrag = propsResumo(String(idx), String(idx));
                   return (
                     <div
                       key={c.label}
