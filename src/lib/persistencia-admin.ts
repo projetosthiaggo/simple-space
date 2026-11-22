@@ -101,6 +101,7 @@ export function gravarPaginaInicial(
 ): ConteudoPaginaInicial {
   if (podeUsarStorage()) {
     try {
+      console.log("Salvando página inicial:", conteudo);
       localStorage.setItem(CHAVE_PAGINA, JSON.stringify(conteudo));
     } catch {
       // Quota cheia ou storage indisponível: mantém apenas em memória.
