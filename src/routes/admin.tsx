@@ -77,9 +77,10 @@ import {
   type Pedido,
 } from "@/data/plataforma";
 import { MapaPlataforma } from "@/components/mapa-plataforma";
-import { LayoutGrid, LayoutList, LayoutGrid2, Minus, Plus as PlusZoom, GripVertical } from "lucide-react";
+import { LayoutGrid, LayoutList, LayoutGrid2, Minus, Plus as PlusZoom, GripVertical, Image as ImageIcon, Megaphone, Home, Repeat, Upload } from "lucide-react";
 
 // ===== Utilitários de modo de exibição e reordenação por arrastar/soltar =====
+
 
 type ModoExibicao = "quadros" | "icones" | "texto";
 
@@ -349,7 +350,9 @@ type SecaoId =
   | "avaliacoes"
   | "categorias"
   | "utilizadores"
-  | "planos";
+  | "planos"
+  | "pagina-inicial"
+  | "divulgacao";
 
 const NAVEGACAO: { id: SecaoId; label: string; icone: typeof Users }[] = [
   { id: "resumo", label: "Resumo", icone: LayoutDashboard },
@@ -360,6 +363,8 @@ const NAVEGACAO: { id: SecaoId; label: string; icone: typeof Users }[] = [
   { id: "categorias", label: "Categorias", icone: Layers },
   { id: "utilizadores", label: "Utilizadores", icone: User },
   { id: "planos", label: "Planos", icone: Banknote },
+  { id: "pagina-inicial", label: "Editar página inicial", icone: Home },
+  { id: "divulgacao", label: "Divulgação", icone: Megaphone },
 ];
 
 interface UtilizadorReciente {
@@ -1653,6 +1658,218 @@ function Admin() {
                   </Card>
                 ))}
               </div>
+            </div>
+          )}
+
+          {secao === "pagina-inicial" && (
+            <div className="space-y-4">
+              <Card>
+                <CardContent className="p-5">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <h2 className="font-semibold">Editar página inicial</h2>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        Edita o conteúdo visível na página inicial do site.
+                      </p>
+                    </div>
+                    <Badge variant="outline">Página inicial</Badge>
+                  </div>
+                </CardContent>
+              </Card>
+              <div className="grid gap-4 md:grid-cols-2">
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base">Hero (título principal)</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-medium">Título</label>
+                      <Input defaultValue="Encontra o profissional certo." />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-medium">Subtítulo</label>
+                      <Input defaultValue="Sem complicações." />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-medium">Descrição</label>
+                      <textarea
+                        className="min-h-20 w-full rounded-md border px-3 py-2 text-sm" defaultValue="Explica-nos o que precisas. A ProxiPro AI ajuda-te a encontrar profissionais adequados à tua necessidade."
+                      />
+                    </div>
+                    <Button size="sm" onClick={() => toast.success("Título do hero atualizado (demonstração)")}>Guardar</Button>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base">Secção Categorias</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <p className="text-xs text-muted-foreground">
+                      Reorganiza as categorias mostradas na página inicial arrastando os itens.
+                    </p>
+                    <div className="grid gap-2">
+                      {categorias.map((c) => (
+                        <div
+                          key={c.id}
+                          className="flex items-center gap-2 rounded-lg border p-2 text-sm"
+                        >
+                          <GripVertical className="size-4 text-muted-foreground" />
+                          <span>{c.nome}</span>
+                          <Badge variant="outline" className="ml-auto">{c.id}</Badge>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card className="md:col-span-2">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base">Secção "Para profissionais"</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="grid gap-3 md:grid-cols-2">
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-medium">Título</label>
+                        <Input defaultValue="És profissional? Encontra novos clientes." />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-medium">Texto de apoio</label>
+                        <Input defaultValue="Cria o teu perfil, apresenta os teus serviços e recebe oportunidades de trabalho." />
+                      </div>
+                    </div>
+                    <div className="grid gap-2">
+                      <p className="text-xs font-medium">Benefícios (arrasta para reordenar)</p>
+                      {[
+                        "Perfil profissional com portefólio",
+                        "Receção de pedidos de clientes",
+                        "Mensagens e propostas",
+                        "Estatísticas do teu perfil",
+                        "Disponibilidade à medida",
+                        "Avaliações reais",
+                      ].map((b, i) => (
+                        <div
+                          key={i}
+                          className="flex items-center gap-2 rounded-lg border p-2 text-sm"
+                        >
+                          <GripVertical className="size-4 text-muted-foreground" />
+                          <span>{b}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <Button size="sm" onClick={() => toast.success("Secção de profissionais atualizada (demonstração)")}>Guardar</Button>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          )}
+
+          {secao === "divulgacao" && (
+            <div className="space-y-4">
+              <Card>
+                <CardContent className="p-5">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <h2 className="font-semibold">Banners de divulgação</h2>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        Cria banners em forma de popup para exibir na página inicial.
+                      </p>
+                    </div>
+                    <Badge variant="outline">Popup</Badge>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="space-y-4 p-5">
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="space-y-2">
+                      <label className="text-xs font-medium">Título do banner</label>
+                      <Input placeholder="Ex.: Promoção de verão" />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-xs font-medium">Texto de apoio</label>
+                      <Input placeholder="Ex.: Regista-te e ganha 10% de desconto" />
+                    </div>
+                  </div>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="space-y-2">
+                      <label className="text-xs font-medium">Imagem (envia um arquivo)</label>
+                      <div className="flex items-center gap-3">
+                        <Input type="file" accept="image/*" className="w-full" />
+                        <Button type="button" size="sm" variant="outline" onClick={() => toast.success("Arquivo enviado (demonstração)")}>
+                          <Upload className="mr-1 size-3.5" /> Enviar
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-xs font-medium">Tamanho</label>
+                      <div className="flex flex-wrap gap-2">
+                        <Button type="button" size="sm" variant="outline">Pequeno</Button>
+                        <Button type="button" size="sm" variant="outline">Médio</Button>
+                        <Button type="button" size="sm" variant="outline">Grande</Button>
+                      </div>
+                      <p className="text-xs text-muted-foreground">Padrão: tamanho original do arquivo.</p>
+                    </div>
+                  </div>
+                  <div className="grid gap-4 md:grid-cols-3">
+                    <div className="space-y-2">
+                      <label className="text-xs font-medium">Data de início</label>
+                      <Input type="datetime-local" />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-xs font-medium">Data de término</label>
+                      <Input type="datetime-local" />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-xs font-medium">Vezes de exibição</label>
+                      <Input type="number" min={0} placeholder="0 = ilimitado" />
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Button size="sm" onClick={() => toast.success("Banner criado (demonstração)")}>Criar banner</Button>
+                    <Button size="sm" variant="outline" onClick={() => toast.info("Banner agendado (demonstração)")}>Agendar</Button>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-5">
+                  <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <h3 className="font-semibold">Banners existentes</h3>
+                      <p className="text-xs text-muted-foreground">
+                        Lista de banners criados (demonstração).
+                      </p>
+                    </div>
+                    <Badge variant="outline">2 ativos</Badge>
+                  </div>
+                  <div className="grid gap-3">
+                    <div className="flex items-center justify-between rounded-xl border p-3">
+                      <div className="flex items-center gap-3">
+                        <ImageIcon className="size-8 text-primary" />
+                        <div>
+                          <div className="text-sm font-medium">Promoção de verão</div>
+                          <div className="text-xs text-muted-foreground">Pequeno · ilimitado</div>
+                        </div>
+                      </div>
+                      <div className="flex gap-1">
+                        <Button size="sm" variant="ghost" onClick={() => toast.info("Banner editado (demonstração)")}><Pencil className="mr-1 size-3.5" />Editar</Button>
+                        <Button size="sm" variant="ghost" onClick={() => toast.info("Banner removido (demonstração)")}><Trash2 className="size-3.5" /></Button>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between rounded-xl border p-3">
+                      <div className="flex items-center gap-3">
+                        <ImageIcon className="size-8 text-primary" />
+                        <div>
+                          <div className="text-sm font-medium">Novo plano Premium</div>
+                          <div className="text-xs text-muted-foreground">Grande · 3 vezes</div>
+                        </div>
+                      </div>
+                      <div className="flex gap-1">
+                        <Button size="sm" variant="ghost" onClick={() => toast.info("Banner editado (demonstração)")}><Pencil className="mr-1 size-3.5" />Editar</Button>
+                        <Button size="sm" variant="ghost" onClick={() => toast.info("Banner removido (demonstração)")}><Trash2 className="size-3.5" /></Button>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           )}
         </main>
