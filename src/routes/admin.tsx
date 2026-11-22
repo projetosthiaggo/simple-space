@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState, type DragEvent } from "react";
 import {
   Users,
   UserCheck,
@@ -77,6 +77,140 @@ import {
   type Pedido,
 } from "@/data/plataforma";
 import { MapaPlataforma } from "@/components/mapa-plataforma";
+import { LayoutGrid, LayoutList, LayoutGrid2, Minus, Plus as PlusZoom, GripVertical } from "lucide-react";
+
+// ===== Utilitários de modo de exibição e reordenação por arrastar/soltar =====
+
+type ModoExibicao = "quadros" | "icones" | "texto";
+
+const ROTULO_MODO: Record<ModoExibicao, string> = {
+  quadros: "Quadros",
+  icones: "Ícones",
+  texto: "Texto",
+};
+
+/**
+ * Hook que liga eventos de drag/drop nativos para reordenar itens.
+ * O estado (ordem) vive no pai; ao arrastar e largar sobre um item, a ordem
+ * é recalculada e repassada ao pai via `aoReordenar`.
+ */
+function usarReordenacao<T extends { id: string }>(
+  itens: T[],
+  aoReordenar: (nova: T[]) => void,
+) {
+  const arrastandoRef = useRef<string | null>(null);
+
+  const props = (id: string, alvoId: string) => ({
+    draggable: true,
+    "data-arrastavel": id,
+    onDragStart: (e: DragEvent<HTMLElement>) => {
+      arrastandoRef.current = id;
+      e.dataTransfer.effectAllowed = "move";
+      e.dataTransfer.setData("text/plain", id);
+    },
+    onDragOver: (e: DragEvent<HTMLElement>) => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "move";
+    },
+    onDrop: (e: DragEvent<HTMLElement>) => {
+      e.preventDefault();
+      const origem = arrastandoRef.current;
+      arrastandoRef.current = null;
+      if (!origem || origem === alvoId) return;
+      const nova = [...itens];
+      const iO = nova.findIndex((i) => i.id === origem);
+      const iA = nova.findIndex((i) => i.id === alvoId);
+      if (iO === -1 || iA === -1) return;
+      const [removido] = nova.splice(iO, 1);
+      nova.splice(iA, 0, removido);
+      aoReordenar(nova);
+    },
+    onDragEnd: () => {
+      arrastandoRef.current = null;
+    },
+  });
+  return props;
+}
+
+function ControlesExibicao({
+  modo,
+  aoMudarModo,
+  tamanho,
+  aoMudarTamanho,
+}: {
+  modo: ModoExibicao;
+  aoMudarModo: (m: ModoExibicao) => void;
+  tamanho: number;
+  aoMudarTamanho: (delta: number) => void;
+}) {
+  const botoes: { id: ModoExibicao; Icone: typeof LayoutGrid; label: string }[] = [
+    { id: "quadros", Icone: LayoutGrid, label: "Quadros" },
+    { id: "icones", Icone: LayoutGrid2, label: "Ícones" },
+    { id: "texto", Icone: LayoutList, label: "Texto" },
+  ];
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <div className="inline-flex rounded-xl border bg-muted/40 p-1" role="group" aria-label="Modo de exibição">
+        {botoes.map(({ id, Icone, label }) => (
+          <button
+            key={id}
+            type="button"
+            title={label}
+            aria-pressed={modo === id}
+            onClick={() => aoMudarModo(id)}
+            className={`flex size-8 items-center justify-center rounded-lg transition-all ${
+              modo === id
+                ? "bg-background text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <Icone className="size-4" />
+          </button>
+        ))}
+      </div>
+      <div className="inline-flex items-center gap-1 rounded-xl border bg-muted/40 p-1" role="group" aria-label="Tamanho de exibição">
+        <button
+          type="button"
+          title="Diminuir tamanho"
+          aria-label="Diminuir tamanho"
+          onClick={() => aoMudarTamanho(-1)}
+          className="flex size-8 items-center justify-center rounded-lg text-muted-foreground transition-all hover:bg-background hover:text-foreground disabled:opacity-40"
+          disabled={tamanho <= 0}
+        >
+          <Minus className="size-4" />
+        </button>
+        <span className="min-w-[2.5rem] text-center text-xs font-medium tabular-nums text-muted-foreground">
+          {tamanho * 4}x
+        </span>
+        <button
+          type="button"
+          title="Aumentar tamanho"
+          aria-label="Aumentar tamanho"
+          onClick={() => aoMudarTamanho(1)}
+          className="flex size-8 items-center justify-center rounded-lg text-muted-foreground transition-all hover:bg-background hover:text-foreground disabled:opacity-40"
+          disabled={tamanho >= 4}
+        >
+          <PlusZoom className="size-4" />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/** Classe de tamanho para a célula de um item (0-4). */
+function classeTamanho(tamanho: number, modo: ModoExibicao): string {
+  switch (modo) {
+    case "texto":
+      // Escala a tipografia: texto → base → lg → xl → 2xl
+      return ["text-sm", "text-base", "text-lg", "text-xl", "text-2xl"][tamanho];
+    case "icones":
+      // Escala o ícone: 16 → 20 → 24 → 32 → 40
+      return ["size-4", "size-5", "size-6", "size-8", "size-10"][tamanho];
+    default:
+      // Quadros: escala o padding interno 1 → 5
+      return ["p-4", "p-5", "p-6", "p-8", "p-10"][tamanho];
+  }
+}
 
 export const Route = createFileRoute("/admin")({
   component: Admin,
@@ -123,6 +257,69 @@ const CORES_ENTITY = [
   "var(--color-chart-1)",
   "var(--color-chart-2)",
   "var(--color-chart-3)",
+];
+
+// Lista inicial de categorias (para reordenação drag/drop)
+const listaCategoriasInicial = [
+  "Reparações e bricolage",
+  "Canalização",
+  "Eletricidade",
+  "Limpeza",
+  "Jardinagem",
+  "Pintura",
+  "Mudanças e transportes",
+  "Informática e tecnologia",
+  "Design gráfico",
+  "Marketing digital",
+  "Fotografia e vídeo",
+  "Explicações e formação",
+  "Consultoria empresarial",
+  "Eventos",
+  "Beleza e bem-estar",
+  "Outros serviços",
+];
+
+// Avaliações de demonstração (para reordenação drag/drop)
+interface AvaliacaoDemonstracao {
+  id: string;
+  pro: string;
+  estrelas: number;
+  texto: string;
+}
+const avaliacoesDemonstracao: AvaliacaoDemonstracao[] = [
+  {
+    id: "av1",
+    pro: "Marta Costa",
+    estrelas: 5,
+    texto: "Excelente profissional, cumprimentou e entregou no prazo.",
+  },
+  {
+    id: "av2",
+    pro: "Ana Silva",
+    estrelas: 4,
+    texto: "Muito boa comunicação e serviço caprichado.",
+  },
+  {
+    id: "av3",
+    pro: "Carlos Mendes",
+    estrelas: 5,
+    texto: "Trabalho de topo, recomendo.",
+  },
+];
+
+// Utilizadores de demonstração (para reordenação drag/drop)
+interface UtilizadorDemonstracao {
+  id: string;
+  nome: string;
+  tipo: string;
+  estado: string;
+  acesso: string;
+}
+const utilizadoresDemonstracao: UtilizadorDemonstracao[] = [
+  { id: "u-0", nome: "admin@proxipro.ai", tipo: "Administrador", estado: "Ativo", acesso: "Hoje, 09:12" },
+  { id: "u-1", nome: "ana.silva@exemplo.pt", tipo: "Cliente", estado: "Ativo", acesso: "Ontem" },
+  { id: "u-2", nome: "carlos.mendes@exemplo.pt", tipo: "Profissional", estado: "Ativo", acesso: "Há 2 dias" },
+  { id: "u-3", nome: "s.oficial@exemplo.pt", tipo: "Profissional", estado: "Pendente", acesso: "Há 5 dias" },
 ];
 
 const configuracaoMapa: ChartConfig = {
@@ -220,6 +417,31 @@ function Admin() {
   const [novaCategoria, setNovaCategoria] = useState("");
   const [busca, setBusca] = useState("");
   const [detalhe, setDetalhe] = useState<DetalheProfissional>(null);
+
+  // ===== Estado local de exibição e reordenação por arrastar/soltar =====
+  const [modoExibicao, setModoExibicao] = useState<ModoExibicao>("quadros");
+  const [tamanhoExibicao, setTamanhoExibicao] = useState(1); // 0..4
+  const [ordemResumo, setOrdemResumo] = useState<number[]>(() =>
+    Array.from({ length: 8 }, (_, i) => i),
+  );
+  const [ordemProfissionais, setOrdemProfissionais] = useState<string[]>(() =>
+    profissionais.map((p) => p.id),
+  );
+  const [ordemPedidos, setOrdemPedidos] = useState<string[]>(() =>
+    pedidos.map((p) => p.id),
+  );
+  const [ordemAvaliacoes, setOrdemAvaliacoes] = useState<string[]>(() =>
+    avaliacoesDemonstracao.map((a) => a.id),
+  );
+  const [ordemCategorias, setOrdemCategorias] = useState<string[]>(() =>
+    listaCategoriasInicial.map((c) => c),
+  );
+  const [ordemUtilizadores, setOrdemUtilizadores] = useState<string[]>(() =>
+    utilizadoresDemonstracao.map((u, i) => `u-${i}`),
+  );
+  const [ordemPlanos, setOrdemPlanos] = useState<string[]>(() =>
+    planos.map((p) => p.nome),
+  );
 
   const secaoAtual = NAVEGACAO.find((n) => n.id === secao);
   const SecaoIcone = secaoAtual?.icone ?? LayoutDashboard;
@@ -402,91 +624,109 @@ function Admin() {
 
           {secao === "resumo" && (
             <>
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                {[
-                  {
-                    icone: <Users className="size-5" />,
-                    valor: "128",
-                    delta: "+12 esta semana",
-                    label: "Clientes registados",
-                    acao: "utilizadores" as SecaoId,
-                  },
-                  {
-                    icone: <UserCheck className="size-5" />,
-                    valor: "42",
-                    delta: "+3 novos",
-                    label: "Profissionais aprovados",
-                    acao: "profissionais" as SecaoId,
-                  },
-                  {
-                    icone: <Clock className="size-5" />,
-                    valor: "9",
-                    delta: "a aprovar",
-                    label: "Profissionais pendentes",
-                    acao: "profissionais" as SecaoId,
-                  },
-                  {
-                    icone: <Inbox className="size-5" />,
-                    valor: "87",
-                    delta: "+6 hoje",
-                    label: "Pedidos de serviço",
-                    acao: "pedidos" as SecaoId,
-                  },
-                  {
-                    icone: <Flag className="size-5" />,
-                    valor: "3",
-                    delta: "a tratar",
-                    label: "Denúncias a tratar",
-                    acao: "denuncias" as SecaoId,
-                  },
-                  {
-                    icone: <StarIcon className="size-5" />,
-                    valor: "214",
-                    delta: "+8 novas",
-                    label: "Avaliações publicadas",
-                    acao: "avaliacoes" as SecaoId,
-                  },
-                  {
-                    icone: <CreditCard className="size-5" />,
-                    valor: "14",
-                    delta: "+2 este mês",
-                    label: "Subscrições ativas",
-                    acao: "planos" as SecaoId,
-                  },
-                  {
-                    icone: <ShieldCheck className="size-5" />,
-                    valor: "1",
-                    delta: "ativo",
-                    label: "Administradores ativos",
-                    acao: "utilizadores" as SecaoId,
-                  },
-                ].map((c) => (
-                  <button
-                    key={c.label}
-                    onClick={() => setSecao(c.acao)}
-                    className="text-left"
-                  >
-                    <Card className="h-full transition-all hover:-translate-y-0.5 hover:shadow-md">
-                      <CardContent className="p-5">
-                        <div className="mb-3 flex items-center justify-between">
-                          <div className="flex size-10 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                            {c.icone}
-                          </div>
+              <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border bg-muted/20 p-3">
+                <div className="text-xs text-muted-foreground">
+                  <span className="font-medium text-foreground">Exibição: </span>
+                  {ROTULO_MODO[modoExibicao]} · arrasta os cartões para reordenar
+                </div>
+                <ControlesExibicao
+                  modo={modoExibicao}
+                  aoMudarModo={setModoExibicao}
+                  tamanho={tamanhoExibicao}
+                  aoMudarTamanho={(delta) =>
+                    setTamanhoExibicao((t) => Math.max(0, Math.min(4, t + delta)))
+                  }
+                />
+              </div>
+              <div
+                className={`grid gap-4 ${
+                  modoExibicao === "texto"
+                    ? "grid-cols-1"
+                    : "sm:grid-cols-2 lg:grid-cols-4"
+                }`}
+              >
+                {ordemResumo.map((idx) => {
+                  const c = cardsResumo[idx];
+                  const arrastar = usarReordenacao(
+                    ordemResumo.map((o) => ({ id: String(o) })),
+                    (nova) =>
+                      setOrdemResumo(nova.map((n) => Number(n.id))),
+                  );
+                  const propsDrag = arrastar(String(idx), String(idx));
+                  return (
+                    <div
+                      key={c.label}
+                      {...propsDrag}
+                      className={
+                        modoExibicao === "texto"
+                          ? "cursor-grab rounded-xl border bg-card p-4 shadow-sm transition-all hover:shadow-md active:cursor-grabbing"
+                          : "cursor-grab rounded-2xl border bg-card p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md active:cursor-grabbing"
+                      }
+                      style={
+                        modoExibicao === "quadros"
+                          ? {
+                              transform: undefined,
+                              ["--celula" as string]: "",
+                              padding: ["1rem", "1.25rem", "1.5rem", "2rem", "2.5rem"][tamanhoExibicao],
+                            }
+                          : modoExibicao === "icones"
+                            ? {
+                                ["--icone" as string]: [
+                                  "1rem",
+                                  "1.25rem",
+                                  "1.5rem",
+                                  "2rem",
+                                  "2.5rem",
+                                ][tamanhoExibicao],
+                              }
+                            : { fontSize: ["0.875rem", "1rem", "1.125rem", "1.25rem", "1.5rem"][tamanhoExibicao] }
+                      }
+                      aria-label={`Reordenar ${c.label}`}
+                    >
+                      <div className="mb-3 flex items-center justify-between">
+                        <div
+                          className={`flex items-center justify-center rounded-lg bg-primary text-primary-foreground ${
+                            modoExibicao === "icones"
+                              ? "flex" 
+                              : "flex"
+                          }`}
+                          style={{
+                            width: modoExibicao === "icones" ? (8 + tamanhoExibicao * 4) + "rem" : 2.5 + "rem",
+                            height: modoExibicao === "icones" ? (8 + tamanhoExibicao * 4) + "rem" : 2.5 + "rem",
+                            fontSize: modoExibicao === "icones" ? (1 + tamanhoExibicao * 0.25) + "rem" : "1.25rem",
+                          }}
+                        >
+                          {c.icone}
+                        </div>
+                        {modoExibicao !== "texto" && (
                           <ChevronRight className="size-4 text-muted-foreground" />
-                        </div>
-                        <div className="flex items-baseline gap-2">
-                          <p className="text-3xl font-bold">{c.valor}</p>
-                          <p className="text-xs font-medium text-primary">
-                            {c.delta}
-                          </p>
-                        </div>
-                        <p className="mt-1 text-sm text-muted-foreground">
-                          {c.label}
+                        )}
+                        <GripVertical className="absolute right-2 top-2 size-4 text-muted-foreground/40" />
+                      </div>
+                      <div
+                        className={`flex items-baseline gap-2 ${
+                          modoExibicao === "texto" ? "text-base" : ""
+                        }`}
+                      >
+                        <p
+                          className="font-bold"
+                          style={{
+                            fontSize:
+                              modoExibicao === "texto"
+                                ? ["0.875rem", "1rem", "1.125rem", "1.25rem", "1.5rem"][tamanhoExibicao]
+                                : modoExibicao === "icones"
+                                  ? ["1rem", "1.25rem", "1.5rem", "2rem", "2.5rem"][tamanhoExibicao]
+                                  : ["1.5rem", "1.75rem", "2rem", "2.5rem", "3rem"][tamanhoExibicao],
+                          }}
+                        >
+                          {c.valor}
                         </p>
-                      </CardContent>
-                    </Card>
-                  </button>
-                ))}
+                        <p className="text-xs font-medium text-primary">{c.delta}</p>
+                      </div>
+                      <p className="mt-1 text-sm text-muted-foreground">{c.label}</p>
+                    </div>
+                  );
+                })}
               </div>
 
               <Card>
