@@ -31,11 +31,14 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
+  Cell,
+  Line,
+  LineChart,
   Pie,
   PieChart,
+  ReferenceLine,
   XAxis,
   YAxis,
-  Cell,
 } from "recharts";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -66,6 +69,7 @@ import {
 } from "@/components/ui/table";
 import { toast } from "sonner";
 import {
+  categorias,
   profissionais,
   pedidos,
   planos,
@@ -96,6 +100,25 @@ const dadosEntidades = [
   { tipo: "Pedidos", value: 1 },
 ];
 
+// Faturamento projetado (demonstração) — meses dos últimos 3 + os 3 futuros
+const dadosFaturamento = [
+  { mes: "Nov", real: 3200, previsto: null },
+  { mes: "Dez", real: 3850, previsto: null },
+  { mes: "Jan", real: 4100, previsto: null },
+  { mes: "Fev", real: null, previsto: 4650 },
+  { mes: "Mar", real: null, previsto: 5300 },
+  { mes: "Abr", real: null, previsto: 6050 },
+];
+
+// Categorias mais solicitadas / pesquisadas (nº de pesquisas) na demonstração
+const dadosCategorias = [
+  { categoria: "Reparações", valor: 42 },
+  { categoria: "Limpeza", valor: 31 },
+  { categoria: "Eletricidade", valor: 24 },
+  { categoria: "Jardinagem", valor: 18 },
+  { categoria: "Outros", valor: 9 },
+];
+
 const CORES_ENTITY = [
   "var(--color-chart-1)",
   "var(--color-chart-2)",
@@ -110,6 +133,15 @@ const configuracaoEntidades: ChartConfig = {
   Clientes: { label: "Clientes", color: "var(--color-chart-1)" },
   Profissionais: { label: "Profissionais", color: "var(--color-chart-2)" },
   Pedidos: { label: "Pedidos", color: "var(--color-chart-3)" },
+};
+
+const configuracaoFaturamento: ChartConfig = {
+  real: { label: "Faturado", color: "var(--color-chart-2)" },
+  previsto: { label: "Previsto", color: "var(--color-chart-1)" },
+};
+
+const configuracaoCategorias: ChartConfig = {
+  valor: { label: "Pesquisas", color: "var(--color-chart-3)" },
 };
 
 type SecaoId =
@@ -133,9 +165,54 @@ const NAVEGACAO: { id: SecaoId; label: string; icone: typeof Users }[] = [
   { id: "planos", label: "Planos", icone: Banknote },
 ];
 
+interface UtilizadorReciente {
+  id: string;
+  nome: string;
+  email: string;
+  tipo: "Cliente" | "Profissional" | "Administrador";
+  estado: "Ativo" | "Pendente";
+  registo: string;
+}
+
+const utilizadoresRecentes: UtilizadorReciente[] = [
+  {
+    id: "u1",
+    nome: "Ana Silva",
+    email: "ana.silva@exemplo.pt",
+    tipo: "Cliente",
+    estado: "Ativo",
+    registo: "Há 1 dia",
+  },
+  {
+    id: "u2",
+    nome: "Carlos Mendes",
+    email: "carlos.mendes@exemplo.pt",
+    tipo: "Profissional",
+    estado: "Ativo",
+    registo: "Há 3 dias",
+  },
+  {
+    id: "u3",
+    nome: "Marta Costa",
+    email: "marta.costa@exemplo.pt",
+    tipo: "Profissional",
+    estado: "Ativo",
+    registo: "Há 5 dias",
+  },
+  {
+    id: "u4",
+    nome: "admin@proxipro.ai",
+    email: "admin@proxipro.ai",
+    tipo: "Administrador",
+    estado: "Ativo",
+    registo: "—",
+  },
+];
+
 type DetalheProfissional =
   | { tipo: "profissional"; alvo: Profissional }
   | { tipo: "pedido"; alvo: Pedido }
+  | { tipo: "utilizador"; alvo: UtilizadorReciente }
   | null;
 
 function Admin() {
@@ -453,43 +530,136 @@ function Admin() {
 
               <div className="grid gap-4 lg:grid-cols-2">
                 <div className="grid gap-4 sm:grid-cols-2">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-sm">
-                        Registos por localidade
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <ChartContainer
-                        config={configuracaoMapa}
-                        className="h-40 aspect-auto w-full"
-                      >
-                        <BarChart data={dadosLocalidade}>
-                          <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                          <XAxis
-                            dataKey="localidade"
-                            tick={{ fontSize: 10 }}
-                            interval={0}
-                          />
-                          <YAxis
-                            tick={{ fontSize: 10 }}
-                            width={26}
-                            allowDecimals={false}
-                          />
-                          <ChartTooltip
-                            content={
-                              <ChartTooltipContent hideIndicator nameKey="value" />
-                            }
-                          />
-                          <Bar
-                            dataKey="Registos"
-                            fill="var(--color-chart-1)"
-                            radius={[3, 3, 0, 0]}
-                          />
-                        </BarChart>
-                      </ChartContainer>
-                    </CardContent>
-                  </Card>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <Card className="sm:col-span-1">
+                      <CardHeader>
+                        <CardTitle className="text-sm">
+                          Registos por localidade
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <ChartContainer
+                          config={configuracaoMapa}
+                          className="h-40 aspect-auto w-full"
+                        >
+                          <BarChart data={dadosLocalidade}>
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                            <XAxis
+                              dataKey="localidade"
+                              tick={{ fontSize: 10 }}
+                              interval={0}
+                            />
+                            <YAxis
+                              tick={{ fontSize: 10 }}
+                              width={26}
+                              allowDecimals={false}
+                            />
+                            <ChartTooltip
+                              content={
+                                <ChartTooltipContent hideIndicator nameKey="value" />
+                              }
+                            />
+                            <Bar
+                              dataKey="Registos"
+                              fill="var(--color-chart-1)"
+                              radius={[3, 3, 0, 0]}
+                            />
+                          </BarChart>
+                        </ChartContainer>
+                      </CardContent>
+                    </Card>
+                    <Card className="sm:col-span-1">
+                      <CardHeader>
+                        <CardTitle className="text-sm">
+                          Futuro faturamento · categoria mais solicitada
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="flex h-full flex-col gap-3">
+                          <ChartContainer
+                            config={configuracaoFaturamento}
+                            className="h-32 w-full flex-1"
+                          >
+                            <LineChart data={dadosFaturamento}>
+                              <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                              <XAxis dataKey="mes" tick={{ fontSize: 10 }} />
+                              <YAxis tick={{ fontSize: 10 }} width={34} />
+                              <ChartTooltip
+                                content={<ChartTooltipContent hideIndicator />}
+                              />
+                              <ReferenceLine
+                                x="Fev"
+                                stroke="var(--muted-foreground)"
+                                strokeDasharray="4 4"
+                              />
+                              <Line
+                                type="monotone"
+                                dataKey="real"
+                                stroke="var(--color-chart-2)"
+                                strokeWidth={2}
+                                connectNulls
+                              />
+                              <Line
+                                type="monotone"
+                                dataKey="previsto"
+                                stroke="var(--color-chart-1)"
+                                strokeWidth={2}
+                                strokeDasharray="6 6"
+                                connectNulls
+                              />
+                            </LineChart>
+                          </ChartContainer>
+                          <div className="grid grid-cols-2 gap-3 text-xs">
+                            <div className="rounded-lg border p-2">
+                              <div className="text-muted-foreground">
+                                Faturamento previsto (Fev–Abr)
+                              </div>
+                              <div className="text-base font-bold">
+                                ~16 000 €
+                              </div>
+                            </div>
+                            <div className="rounded-lg border p-2">
+                              <div className="text-muted-foreground">
+                                Categoria mais pesquisada
+                              </div>
+                              <div className="text-base font-bold">
+                                {dadosCategorias[0].categoria}
+                              </div>
+                            </div>
+                          </div>
+                          <div>
+                            <ChartContainer
+                              config={configuracaoCategorias}
+                              className="h-28 w-full"
+                            >
+                              <BarChart
+                                data={dadosCategorias}
+                                layout="vertical"
+                              >
+                                <XAxis type="number" hide />
+                                <YAxis
+                                  type="category"
+                                  dataKey="categoria"
+                                  tick={{ fontSize: 10 }}
+                                  width={70}
+                                />
+                                <ChartTooltip
+                                  content={
+                                    <ChartTooltipContent hideIndicator />
+                                  }
+                                />
+                                <Bar
+                                  dataKey="valor"
+                                  fill="var(--color-chart-3)"
+                                  radius={[0, 3, 3, 0]}
+                                />
+                              </BarChart>
+                            </ChartContainer>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
                   <Card>
                     <CardHeader>
                       <CardTitle className="text-sm">
@@ -529,6 +699,79 @@ function Admin() {
                   </Card>
                 </div>
               </div>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-sm">
+                    Últimos registos · utilizadores, profissionais e pedidos
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid gap-4 lg:grid-cols-3">
+                    <div>
+                      <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                        Últimos utilizadores
+                      </h4>
+                      <div className="space-y-2">
+                        {utilizadoresRecentes.map((u) => (
+                          <button
+                            key={u.id}
+                            onClick={() => setDetalhe({ tipo: "utilizador", alvo: u })}
+                            className="flex w-full items-center justify-between rounded-xl border p-3 text-left transition-all hover:border-primary/40 hover:bg-muted/40"
+                          >
+                            <span className="text-sm font-medium">{u.nome}</span>
+                            <span className="text-xs text-muted-foreground">
+                              {u.registo}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                        Últimos profissionais
+                      </h4>
+                      <div className="space-y-2">
+                        {profissionais.slice(0, 3).map((p) => (
+                          <button
+                            key={p.id}
+                            onClick={() => setDetalhe({ tipo: "profissional", alvo: p })}
+                            className="flex w-full items-center justify-between rounded-xl border p-3 text-left transition-all hover:border-primary/40 hover:bg-muted/40"
+                          >
+                            <span className="text-sm font-medium">
+                              {p.nomeComercial ?? p.nome}
+                            </span>
+                            <span className="text-xs text-muted-foreground">
+                              {p.localidade}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                        Últimos pedidos
+                      </h4>
+                      <div className="space-y-2">
+                        {pedidos.map((d) => (
+                          <button
+                            key={d.id}
+                            onClick={() => setDetalhe({ tipo: "pedido", alvo: d })}
+                            className="flex w-full items-center justify-between rounded-xl border p-3 text-left transition-all hover:border-primary/40 hover:bg-muted/40"
+                          >
+                            <span className="truncate text-sm font-medium">
+                              {d.titulo}
+                            </span>
+                            <span className="text-xs text-muted-foreground">
+                              {d.dataCriacao}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </>
           )}
 
@@ -1189,7 +1432,9 @@ function Admin() {
                   ? "Perfil do profissional"
                   : detalhe?.tipo === "pedido"
                     ? "Detalhes do pedido"
-                    : "Detalhes"}
+                    : detalhe?.tipo === "utilizador"
+                      ? "Detalhes do utilizador"
+                      : "Detalhes"}
               </SheetTitle>
               <Button variant="ghost" size="sm" onClick={() => setDetalhe(null)}>
                 <X className="size-4" />
@@ -1275,6 +1520,64 @@ function Admin() {
                 >
                   <Trash2 className="mr-1 size-3.5" />
                   Remover
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {detalhe?.tipo === "utilizador" && (
+            <div className="mt-4 space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="flex size-14 items-center justify-center rounded-full bg-primary/10 text-lg font-semibold text-primary">
+                  {detalhe.alvo.nome.charAt(0)}
+                </div>
+                <div>
+                  <h3 className="font-semibold">{detalhe.alvo.nome}</h3>
+                  <p className="text-sm text-muted-foreground">
+                    {detalhe.alvo.email}
+                  </p>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div className="rounded-lg border p-3">
+                  <div className="text-xs text-muted-foreground">Tipo</div>
+                  <div className="font-medium">{detalhe.alvo.tipo}</div>
+                </div>
+                <div className="rounded-lg border p-3">
+                  <div className="text-xs text-muted-foreground">Estado</div>
+                  <div className="font-medium">{detalhe.alvo.estado}</div>
+                </div>
+                <div className="rounded-lg border p-3">
+                  <div className="text-xs text-muted-foreground">
+                    Registo
+                  </div>
+                  <div className="font-medium">{detalhe.alvo.registo}</div>
+                </div>
+                <div className="rounded-lg border p-3">
+                  <div className="text-xs text-muted-foreground">Acesso</div>
+                  <div className="font-medium">Recorde local</div>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() =>
+                    toast.success("Dados do utilizador atualizados (demonstração)")
+                  }
+                >
+                  <Pencil className="mr-1 size-3.5" />
+                  Editar
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() =>
+                    toast.info("Bloqueio de conta de utilizador (demonstração)")
+                  }
+                >
+                  <Lock className="mr-1 size-3.5" />
+                  Bloquear
                 </Button>
               </div>
             </div>
