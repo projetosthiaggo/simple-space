@@ -529,175 +529,174 @@ function Admin() {
               </Card>
 
               <div className="grid gap-4 lg:grid-cols-2">
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <Card className="sm:col-span-1">
-                      <CardHeader>
-                        <CardTitle className="text-sm">
-                          Registos por localidade
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <ChartContainer
-                          config={configuracaoMapa}
-                          className="h-40 aspect-auto w-full"
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-sm">
+                      Registos por localidade
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <ChartContainer
+                      config={configuracaoMapa}
+                      className="h-40 aspect-auto w-full"
+                    >
+                      <BarChart data={dadosLocalidade}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                        <XAxis
+                          dataKey="localidade"
+                          tick={{ fontSize: 10 }}
+                          interval={0}
+                        />
+                        <YAxis
+                          tick={{ fontSize: 10 }}
+                          width={26}
+                          allowDecimals={false}
+                        />
+                        <ChartTooltip
+                          content={
+                            <ChartTooltipContent hideIndicator nameKey="value" />
+                          }
+                        />
+                        <Bar
+                          dataKey="Registos"
+                          fill="var(--color-chart-1)"
+                          radius={[3, 3, 0, 0]}
+                        />
+                      </BarChart>
+                    </ChartContainer>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-sm">
+                      Repartição de entidades
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <ChartContainer
+                      config={configuracaoEntidades}
+                      className="h-40 aspect-auto w-full"
+                    >
+                      <PieChart>
+                        <Pie
+                          data={dadosEntidades}
+                          dataKey="value"
+                          nameKey="tipo"
+                          innerRadius={35}
+                          outerRadius={60}
+                          paddingAngle={3}
                         >
-                          <BarChart data={dadosLocalidade}>
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                            <XAxis
-                              dataKey="localidade"
-                              tick={{ fontSize: 10 }}
-                              interval={0}
+                          {dadosEntidades.map((entry, i) => (
+                            <Cell
+                              key={entry.tipo}
+                              fill={CORES_ENTITY[i % CORES_ENTITY.length]}
                             />
-                            <YAxis
-                              tick={{ fontSize: 10 }}
-                              width={26}
-                              allowDecimals={false}
-                            />
-                            <ChartTooltip
-                              content={
-                                <ChartTooltipContent hideIndicator nameKey="value" />
-                              }
-                            />
-                            <Bar
-                              dataKey="Registos"
-                              fill="var(--color-chart-1)"
-                              radius={[3, 3, 0, 0]}
-                            />
-                          </BarChart>
-                        </ChartContainer>
-                      </CardContent>
-                    </Card>
-                    <Card className="sm:col-span-1">
-                      <CardHeader>
-                        <CardTitle className="text-sm">
-                          Futuro faturamento · categoria mais solicitada
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="flex h-full flex-col gap-3">
-                          <ChartContainer
-                            config={configuracaoFaturamento}
-                            className="h-32 w-full flex-1"
-                          >
-                            <LineChart data={dadosFaturamento}>
-                              <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                              <XAxis dataKey="mes" tick={{ fontSize: 10 }} />
-                              <YAxis tick={{ fontSize: 10 }} width={34} />
-                              <ChartTooltip
-                                content={<ChartTooltipContent hideIndicator />}
-                              />
-                              <ReferenceLine
-                                x="Fev"
-                                stroke="var(--muted-foreground)"
-                                strokeDasharray="4 4"
-                              />
-                              <Line
-                                type="monotone"
-                                dataKey="real"
-                                stroke="var(--color-chart-2)"
-                                strokeWidth={2}
-                                connectNulls
-                              />
-                              <Line
-                                type="monotone"
-                                dataKey="previsto"
-                                stroke="var(--color-chart-1)"
-                                strokeWidth={2}
-                                strokeDasharray="6 6"
-                                connectNulls
-                              />
-                            </LineChart>
-                          </ChartContainer>
-                          <div className="grid grid-cols-2 gap-3 text-xs">
-                            <div className="rounded-lg border p-2">
-                              <div className="text-muted-foreground">
-                                Faturamento previsto (Fev–Abr)
-                              </div>
-                              <div className="text-base font-bold">
-                                ~16 000 €
-                              </div>
-                            </div>
-                            <div className="rounded-lg border p-2">
-                              <div className="text-muted-foreground">
-                                Categoria mais pesquisada
-                              </div>
-                              <div className="text-base font-bold">
-                                {dadosCategorias[0].categoria}
-                              </div>
-                            </div>
-                          </div>
-                          <div>
-                            <ChartContainer
-                              config={configuracaoCategorias}
-                              className="h-28 w-full"
-                            >
-                              <BarChart
-                                data={dadosCategorias}
-                                layout="vertical"
-                              >
-                                <XAxis type="number" hide />
-                                <YAxis
-                                  type="category"
-                                  dataKey="categoria"
-                                  tick={{ fontSize: 10 }}
-                                  width={70}
-                                />
-                                <ChartTooltip
-                                  content={
-                                    <ChartTooltipContent hideIndicator />
-                                  }
-                                />
-                                <Bar
-                                  dataKey="valor"
-                                  fill="var(--color-chart-3)"
-                                  radius={[0, 3, 3, 0]}
-                                />
-                              </BarChart>
-                            </ChartContainer>
-                          </div>
+                          ))}
+                        </Pie>
+                        <ChartTooltip
+                          content={<ChartTooltipContent hideIndicator />}
+                        />
+                        <ChartLegend
+                          content={<ChartLegendContent hideIcon />}
+                        />
+                      </PieChart>
+                    </ChartContainer>
+                  </CardContent>
+                </Card>
+              </div>
+
+              <div className="grid gap-4 lg:grid-cols-2">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-sm">
+                      Futuro faturamento
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <ChartContainer
+                      config={configuracaoFaturamento}
+                      className="h-40 w-full"
+                    >
+                      <LineChart data={dadosFaturamento}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                        <XAxis dataKey="mes" tick={{ fontSize: 10 }} />
+                        <YAxis tick={{ fontSize: 10 }} width={34} />
+                        <ChartTooltip
+                          content={<ChartTooltipContent hideIndicator />}
+                        />
+                        <ReferenceLine
+                          x="Fev"
+                          stroke="var(--muted-foreground)"
+                          strokeDasharray="4 4"
+                        />
+                        <Line
+                          type="monotone"
+                          dataKey="real"
+                          stroke="var(--color-chart-2)"
+                          strokeWidth={2}
+                          connectNulls
+                        />
+                        <Line
+                          type="monotone"
+                          dataKey="previsto"
+                          stroke="var(--color-chart-1)"
+                          strokeWidth={2}
+                          strokeDasharray="6 6"
+                          connectNulls
+                        />
+                      </LineChart>
+                    </ChartContainer>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-sm">
+                      Categoria mais solicitada
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="mb-3 grid grid-cols-2 gap-3 text-xs">
+                      <div className="rounded-lg border p-2">
+                        <div className="text-muted-foreground">
+                          Faturamento previsto (Fev–Abr)
                         </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-sm">
-                        Repartição de entidades
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <ChartContainer
-                        config={configuracaoEntidades}
-                        className="h-40 aspect-auto w-full"
-                      >
-                        <PieChart>
-                          <Pie
-                            data={dadosEntidades}
-                            dataKey="value"
-                            nameKey="tipo"
-                            innerRadius={35}
-                            outerRadius={60}
-                            paddingAngle={3}
-                          >
-                            {dadosEntidades.map((entry, i) => (
-                              <Cell
-                                key={entry.tipo}
-                                fill={CORES_ENTITY[i % CORES_ENTITY.length]}
-                              />
-                            ))}
-                          </Pie>
-                          <ChartTooltip
-                            content={<ChartTooltipContent hideIndicator />}
-                          />
-                          <ChartLegend
-                            content={<ChartLegendContent hideIcon />}
-                          />
-                        </PieChart>
-                      </ChartContainer>
-                    </CardContent>
-                  </Card>
-                </div>
+                        <div className="text-base font-bold">
+                          ~16 000 €
+                        </div>
+                      </div>
+                      <div className="rounded-lg border p-2">
+                        <div className="text-muted-foreground">
+                          Categoria mais pesquisada
+                        </div>
+                        <div className="text-base font-bold">
+                          {dadosCategorias[0].categoria}
+                        </div>
+                      </div>
+                    </div>
+                    <ChartContainer
+                      config={configuracaoCategorias}
+                      className="h-36 w-full"
+                    >
+                      <BarChart data={dadosCategorias} layout="vertical">
+                        <XAxis type="number" hide />
+                        <YAxis
+                          type="category"
+                          dataKey="categoria"
+                          tick={{ fontSize: 10 }}
+                          width={70}
+                        />
+                        <ChartTooltip
+                          content={<ChartTooltipContent hideIndicator />}
+                        />
+                        <Bar
+                          dataKey="valor"
+                          fill="var(--color-chart-3)"
+                          radius={[0, 3, 3, 0]}
+                        />
+                      </BarChart>
+                    </ChartContainer>
+                  </CardContent>
+                </Card>
               </div>
 
               <Card>
