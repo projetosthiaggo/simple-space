@@ -72,6 +72,7 @@ import {
   type Profissional,
   type Pedido,
 } from "@/data/plataforma";
+import { MapaPlataforma } from "@/components/mapa-plataforma";
 
 export const Route = createFileRoute("/admin")({
   component: Admin,
@@ -411,32 +412,46 @@ function Admin() {
                 ))}
               </div>
 
-              <div className="grid gap-4 lg:grid-cols-2">
-                <Card className="transition-all hover:shadow-md">
-                  <CardContent className="flex flex-col items-start justify-between gap-4 p-5 sm:flex-row sm:items-center">
-                    <div className="flex items-center gap-4">
-                      <div className="flex size-12 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
-                        <MapPin className="size-6" />
-                      </div>
-                      <div>
-                        <h2 className="font-semibold">
-                          Mapa interativo da plataforma
-                        </h2>
-                        <p className="mt-1 text-sm text-muted-foreground">
-                          Localiza clientes, profissionais e pedidos. Clica num
-                          registo para ver, editar ou remover os dados.
-                        </p>
-                      </div>
+              <Card>
+                <CardHeader className="flex flex-wrap items-center justify-between gap-3 p-5 pb-0">
+                  <div className="flex items-center gap-4">
+                    <div className="flex size-12 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
+                      <MapPin className="size-6" />
                     </div>
-                    <Button asChild size="sm" variant="secondary">
-                      <Link to="/admin/mapa">
-                        Abrir mapa
-                        <ChevronRight className="ml-1 size-4" />
-                      </Link>
-                    </Button>
-                  </CardContent>
-                </Card>
+                    <div>
+                      <h2 className="font-semibold">
+                        Mapa interativo da plataforma
+                      </h2>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        Visualiza em tempo real clientes, profissionais e
+                        pedidos. Clica num registo para ver os dados.
+                      </p>                    </div>
+                  </div>
+                  <Button asChild size="sm" variant="outline">
+                    <Link to="/admin/mapa">
+                      Mapa completo
+                      <ChevronRight className="ml-1 size-4" />
+                    </Link>
+                  </Button>
+                </CardHeader>
+                <CardContent className="p-0">
+                  <MapaPlataforma
+                    compacto
+                    onSelecionar={(id) => {
+                      if (!id) return;
+                      const pro = profissionais.find((p) => p.id === id);
+                      if (pro) {
+                        setDetalhe({ tipo: "profissional", alvo: pro });
+                        return;
+                      }
+                      const ped = pedidos.find((d) => d.id === id);
+                      if (ped) setDetalhe({ tipo: "pedido", alvo: ped });
+                    }}
+                  />
+                </CardContent>
+              </Card>
 
+              <div className="grid gap-4 lg:grid-cols-2">
                 <div className="grid gap-4 sm:grid-cols-2">
                   <Card>
                     <CardHeader>
