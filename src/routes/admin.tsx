@@ -13,11 +13,31 @@ import {
   Pencil,
   Trash2,
   Plus,
+  MapPin,
+  BarChart3,
 } from "lucide-react";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Pie,
+  PieChart,
+  XAxis,
+  YAxis,
+  Cell,
+} from "recharts";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+  ChartLegend,
+  ChartLegendContent,
+  type ChartConfig,
+} from "@/components/ui/chart";
 import {
   Table,
   TableBody,
@@ -37,6 +57,35 @@ function temAcessoAdmin(): boolean {
   if (typeof localStorage === "undefined") return false;
   return localStorage.getItem("pp-ai-tipo") === "admin";
 }
+
+const dadosLocalidade = [
+  { localidade: "Braga", Registos: 2 },
+  { localidade: "Lisboa", Registos: 1 },
+  { localidade: "Coimbra", Registos: 1 },
+  { localidade: "Porto", Registos: 1 },
+];
+
+const dadosEntidades = [
+  { tipo: "Clientes", value: 5 },
+  { tipo: "Profissionais", value: 4 },
+  { tipo: "Pedidos", value: 1 },
+];
+
+const CORES_ENTITY = [
+  "var(--color-chart-1)",
+  "var(--color-chart-2)",
+  "var(--color-chart-3)",
+];
+
+const configuracaoMapa: ChartConfig = {
+  Registos: { label: "Registos", color: "var(--color-chart-1)" },
+};
+
+const configuracaoEntidades: ChartConfig = {
+  Clientes: { label: "Clientes", color: "var(--color-chart-1)" },
+  Profissionais: { label: "Profissionais", color: "var(--color-chart-2)" },
+  Pedidos: { label: "Pedidos", color: "var(--color-chart-3)" },
+};
 
 function Admin() {
   const [secao, setSecao] = useState<
@@ -118,27 +167,95 @@ function Admin() {
       </div>
 
       {secao === "resumo" && (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {[
-            { icone: <Users className="size-5" />, valor: "128", label: "Clientes registados" },
-            { icone: <UserCheck className="size-5" />, valor: "42", label: "Profissionais aprovados" },
-            { icone: <Clock className="size-5" />, valor: "9", label: "Profissionais pendentes" },
-            { icone: <Inbox className="size-5" />, valor: "87", label: "Pedidos de serviço" },
-            { icone: <Flag className="size-5" />, valor: "3", label: "Denúncias a tratar" },
-            { icone: <Star className="size-5" />, valor: "214", label: "Avaliações publicadas" },
-            { icone: <CreditCard className="size-5" />, valor: "14", label: "Subscrições ativas" },
-            { icone: <ShieldCheck className="size-5" />, valor: "1", label: "Administradores ativos" },
-          ].map((c) => (
-            <Card key={c.label}>
-              <CardContent className="p-5">
-                <div className="mb-3 flex size-10 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                  {c.icone}
+        <div className="space-y-6">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            {[
+              { icone: <Users className="size-5" />, valor: "128", label: "Clientes registados" },
+              { icone: <UserCheck className="size-5" />, valor: "42", label: "Profissionais aprovados" },
+              { icone: <Clock className="size-5" />, valor: "9", label: "Profissionais pendentes" },
+              { icone: <Inbox className="size-5" />, valor: "87", label: "Pedidos de serviço" },
+              { icone: <Flag className="size-5" />, valor: "3", label: "Denúncias a tratar" },
+              { icone: <Star className="size-5" />, valor: "214", label: "Avaliações publicadas" },
+              { icone: <CreditCard className="size-5" />, valor: "14", label: "Subscrições ativas" },
+              { icone: <ShieldCheck className="size-5" />, valor: "1", label: "Administradores ativos" },
+            ].map((c) => (
+              <Card key={c.label}>
+                <CardContent className="p-5">
+                  <div className="mb-3 flex size-10 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+                    {c.icone}
+                  </div>
+                  <p className="text-3xl font-bold">{c.valor}</p>
+                  <p className="text-sm text-muted-foreground">{c.label}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          <div className="grid gap-4 lg:grid-cols-2">
+            <Card className="flex flex-col items-center justify-between gap-4 p-5 sm:flex-row sm:justify-between">
+              <div className="flex items-center gap-4">
+                <div className="flex size-12 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
+                  <MapPin className="size-6" />
                 </div>
-                <p className="text-3xl font-bold">{c.valor}</p>
-                <p className="text-sm text-muted-foreground">{c.label}</p>
-              </CardContent>
+                <div>
+                  <h2 className="font-semibold">Mapa interativo da plataforma</h2>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Localiza clientes, profissionais e pedidos. Clica num registo
+                    para ver, editar ou remover os dados (demonstração).
+                  </p>
+                </div>
+              </div>
+              <Button asChild size="sm">
+                <Link to="/admin/mapa">Abrir mapa</Link>
+              </Button>
             </Card>
-          ))}
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Card>
+                <CardContent className="p-5">
+                  <div className="mb-3 flex items-center gap-2">
+                    <BarChart3 className="size-4 text-muted-foreground" />
+                    <h3 className="text-sm font-semibold">Registos por localidade</h3>
+                  </div>
+                  <ChartContainer config={configuracaoMapa} className="h-40 aspect-auto w-full">
+                    <BarChart data={dadosLocalidade}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                      <XAxis dataKey="localidade" tick={{ fontSize: 10 }} interval={0} />
+                      <YAxis tick={{ fontSize: 10 }} width={26} allowDecimals={false} />
+                      <ChartTooltip content={<ChartTooltipContent hideIndicator nameKey="value" />} />
+                      <Bar dataKey="Registos" fill="var(--color-chart-1)" radius={[3, 3, 0, 0]} />
+                    </BarChart>
+                  </ChartContainer>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-5">
+                  <div className="mb-3 flex items-center gap-2">
+                    <Users className="size-4 text-muted-foreground" />
+                    <h3 className="text-sm font-semibold">Repartição de entidades</h3>
+                  </div>
+                  <ChartContainer config={configuracaoEntidades} className="h-40 aspect-auto w-full">
+                    <PieChart>
+                      <Pie
+                        data={dadosEntidades}
+                        dataKey="value"
+                        nameKey="tipo"
+                        innerRadius={35}
+                        outerRadius={60}
+                        paddingAngle={3}
+                      >
+                        {dadosEntidades.map((entry, i) => (
+                          <Cell key={entry.tipo} fill={CORES_ENTITY[i % CORES_ENTITY.length]} />
+                        ))}
+                      </Pie>
+                      <ChartTooltip content={<ChartTooltipContent hideIndicator />} />
+                      <ChartLegend content={<ChartLegendContent hideIcon />} />
+                    </PieChart>
+                  </ChartContainer>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
         </div>
       )}
 

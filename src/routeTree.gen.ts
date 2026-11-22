@@ -29,6 +29,7 @@ import { Route as PrivacidadeRouteImport } from './routes/privacidade'
 import { Route as ReclamacoesRouteImport } from './routes/reclamacoes'
 import { Route as ContactosRouteImport } from './routes/contactos'
 import { Route as TermosRouteImport } from './routes/termos'
+import { Route as AdminMapaRouteImport } from './routes/admin-mapa'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -130,10 +131,16 @@ const TermosRoute = TermosRouteImport.update({
   path: '/termos',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminMapaRoute = AdminMapaRouteImport.update({
+  id: '/admin/mapa',
+  path: '/admin/mapa',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/admin/mapa': typeof AdminMapaRoute
   '/assistente': typeof AssistenteRoute
   '/categorias': typeof CategoriasRoute
   '/como-funciona': typeof ComoFuncionaRoute
@@ -156,6 +163,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/admin/mapa': typeof AdminMapaRoute
   '/assistente': typeof AssistenteRoute
   '/categorias': typeof CategoriasRoute
   '/como-funciona': typeof ComoFuncionaRoute
@@ -179,6 +187,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/admin/mapa': typeof AdminMapaRoute
   '/assistente': typeof AssistenteRoute
   '/categorias': typeof CategoriasRoute
   '/como-funciona': typeof ComoFuncionaRoute
@@ -203,6 +212,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
+    | '/admin/mapa'
     | '/assistente'
     | '/categorias'
     | '/como-funciona'
@@ -225,6 +235,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/admin'
+    | '/admin/mapa'
     | '/assistente'
     | '/categorias'
     | '/como-funciona'
@@ -247,6 +258,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/admin'
+    | '/admin/mapa'
     | '/assistente'
     | '/categorias'
     | '/como-funciona'
@@ -270,6 +282,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
+  AdminMapaRoute: typeof AdminMapaRoute
   AssistenteRoute: typeof AssistenteRoute
   CategoriasRoute: typeof CategoriasRoute
   ComoFuncionaRoute: typeof ComoFuncionaRoute
@@ -304,6 +317,13 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/mapa': {
+      id: '/admin/mapa'
+      path: '/admin/mapa'
+      fullPath: '/admin/mapa'
+      preLoaderRoute: typeof AdminMapaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/assistente': {
@@ -438,6 +458,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
+  AdminMapaRoute: AdminMapaRoute,
   AssistenteRoute: AssistenteRoute,
   CategoriasRoute: CategoriasRoute,
   ComoFuncionaRoute: ComoFuncionaRoute,
