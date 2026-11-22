@@ -25,7 +25,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { profissionais, categorias } from "@/data/plataforma";
+import { profissionais } from "@/data/plataforma";
 export const Route = createFileRoute("/profissionais/$id")({
   component: PerfilProfissional,
 });

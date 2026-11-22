@@ -26,8 +26,8 @@ import {
   type ChartConfig,
 } from "@/components/ui/chart";
 import { toast } from "sonner";
-import { profissionais, pedidos, categories } from "@/data/plataforma";
-import L from "leaflet";
+import { profissionais, pedidos, categories, distritos } from "@/data/plataforma";
+import * as L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
 export const Route = createFileRoute("/admin/mapa")({
@@ -155,7 +155,7 @@ const LENDA: { tipo: TipoEntidade; label: string; cor: string }[] = [
   { tipo: "pedido", label: "Pedidos", cor: CORES_TEMA.pedido },
 ];
 
-export default function AdminMapa() {
+function AdminMapa() {
   const [entidades, setEntidades] = useState<MapaEntidade[]>(pontosIniciais);
   const [filtros, setFiltros] = useState<Record<TipoEntidade, boolean>>({
     cliente: true,
@@ -324,9 +324,11 @@ export default function AdminMapa() {
         const cor = CORES_TEMA[e.tipo];
         const ehSel = e.id === selecionado;
         const tamanho = ehSel ? 40 : 30;
+        const labelTipo = LENDA.find((l) => l.tipo === e.tipo)?.label.replace(/s$/, "");
 
-        const html = `<button type="button" class="mapa-icone-ponto ${ehSel ? "mapa-icone-ponto--sel" : ""}" style="background:${cor};width:${tamanho}px;height:${tamanho}px" title="${e.nome}">
-          <span class="mapa-icone-ponto-label">${LENDAS().find((l) => l.tipo === e.tipo)?.label.replace(/s$/, "")}</span>
+        const nomeSeguro = e.nome.replace(/"/g, "\u0027");
+        const html = `<button type="button" class="mapa-icone-ponto ${ehSel ? "mapa-icone-ponto--sel" : ""}" style="background:${cor};width:${tamanho}px;height:${tamanho}px" title="${nomeSeguro}">
+          <span class="mapa-icone-ponto-label">${labelTipo}</span>
         </button>`;
 
         const marker = L.marker(coord, {
@@ -473,22 +475,18 @@ export default function AdminMapa() {
             Clica num registo para ver, editar ou remover os dados
             (demonstração).
           </p>
-          <div className="mt-3 flex flex-wrap gap-2">
-            <Link
-              to="/admin"
-              className="flex items-center gap-2 rounded-xl border bg-muted/40 px-4 py-2.5 text-sm font-medium transition hover:bg-muted"
-            >
-              <MapIcon className="size-4" />
-              <span>Painel principal</span>
-            </Link>
-          </div>
+                              <div className="mt-3 flex flex-wrap gap-2">
+                      <Link
+                        to="/admin"
+                        className="flex items-center gap-2 rounded-xl border bg-muted/40 px-4 py-2.5 text-sm font-medium transition hover:bg-muted"
+                      >
+                        <MapIcon className="size-4" />
+                        <span>Painel principal</span>
+                      </Link>
+                    </div>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => (window.location.href = "/admin")}
-        >
-          Voltar ao resumo
+        <Button asChild variant="outline" size="sm">
+          <Link to="/admin">Voltar ao resumo</Link>
         </Button>
       </div>
 
@@ -657,7 +655,7 @@ export default function AdminMapa() {
                     <XAxis dataKey="localidade" tick={{ fontSize: 10 }} interval={0} />
                     <YAxis tick={{ fontSize: 10 }} width={28} allowDecimals={false} />
                     <ChartTooltip
-                      content={<ChartTooltipContent hideIndicator nameKey="value" />}
+                      content={<ChartTooltipContent hideIndicator />}
                     />
                     <Bar dataKey="Clientes" stackId="a" fill={CORES_TEMA.cliente} />
                     <Bar dataKey="Profissionais" stackId="a" fill={CORES_TEMA.profissional} />
