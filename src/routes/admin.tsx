@@ -9,10 +9,15 @@ import {
   Star,
   Lock,
   ShieldCheck,
+  CreditCard,
+  Pencil,
+  Trash2,
+  Plus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -22,7 +27,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { toast } from "sonner";
-import { profissionais, pedidos } from "@/data/plataforma";
+import { profissionais, pedidos, planos } from "@/data/plataforma";
 
 export const Route = createFileRoute("/admin")({
   component: Admin,
@@ -34,7 +39,20 @@ function temAcessoAdmin(): boolean {
 }
 
 function Admin() {
-  const [secao, setSecao] = useState<"resumo" | "profissionais" | "pedidos" | "avaliacoes" | "categorias">("resumo");
+  const [secao, setSecao] = useState<
+    | "resumo"
+    | "profissionais"
+    | "pedidos"
+    | "denuncias"
+    | "avaliacoes"
+    | "categorias"
+    | "utilizadores"
+    | "planos"
+  >("resumo");
+  const [novaCategoria, setNovaCategoria] = useState("");
+  const [planosAtivos, setPlanosAtivos] = useState<
+    Record<string, { basic: number; pro: number; premium: number }>
+  >({});
 
   if (!temAcessoAdmin()) {
     return (
@@ -45,24 +63,19 @@ function Admin() {
         <h1 className="text-2xl font-bold">Acesso reservado</h1>
         <p className="mt-2 text-muted-foreground">
           O painel de administração está reservado a administradores
-          autorizados. Não é possível tornar-se administrador através de um
-          formulário público.
+          autorizados pelo operador da plataforma. Não é possível tornar-se
+          administrador através de um formulário público nem por qualquer
+          escolha feita durante o registo.
         </p>
         <div className="mt-6 flex flex-wrap justify-center gap-3">
-          <Button
-            onClick={() => {
-              localStorage.setItem("pp-ai-tipo", "admin");
-              window.location.reload();
-            }}
-            variant="outline"
-            size="sm"
-          >
-            Entrar como administrador (demonstração)
-          </Button>
-          <Button asChild size="sm">
+          <Button asChild size="sm" variant="default">
             <Link to="/entrar">Iniciar sessão</Link>
           </Button>
         </div>
+        <p className="mt-4 text-xs text-muted-foreground">
+          Para demonstração local: usa a página «Iniciar sessão» e um email
+          começado por «admin».
+        </p>
       </div>
     );
   }
@@ -87,8 +100,11 @@ function Admin() {
           ["resumo", "Resumo"],
           ["profissionais", "Profissionais"],
           ["pedidos", "Pedidos"],
+          ["denuncias", "Denúncias"],
           ["avaliacoes", "Avaliações"],
           ["categorias", "Categorias"],
+          ["utilizadores", "Utilizadores"],
+          ["planos", "Planos"],
         ].map(([id, label]) => (
           <Button
             key={id}
@@ -110,6 +126,8 @@ function Admin() {
             { icone: <Inbox className="size-5" />, valor: "87", label: "Pedidos de serviço" },
             { icone: <Flag className="size-5" />, valor: "3", label: "Denúncias a tratar" },
             { icone: <Star className="size-5" />, valor: "214", label: "Avaliações publicadas" },
+            { icone: <CreditCard className="size-5" />, valor: "14", label: "Subscrições ativas" },
+            { icone: <ShieldCheck className="size-5" />, valor: "1", label: "Administradores ativos" },
           ].map((c) => (
             <Card key={c.label}>
               <CardContent className="p-5">
@@ -211,6 +229,44 @@ function Admin() {
         </Card>
       )}
 
+      {secao === "denuncias" && (
+        <Card>
+          <CardContent className="p-5">
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="font-semibold">Denúncias e reclamações</h2>
+              <Badge variant="outline">A tratar</Badge>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Registo de denúncias recebidas sobre profissionais, pedidos ou
+              avaliações. A administração trata cada caso com transparência e
+              histórico.
+            </p>
+            <div className="mt-4 space-y-3">
+              {[
+                { tipo: "Avaliação", alvo: "Perfil p1", motivo: "Linguagem inadequada", estado: "Em análise" },
+                { tipo: "Pedido", alvo: "Pedido d1", motivo: "Não corresponde à descrição", estado: "Nova" },
+                { tipo: "Perfil", alvo: "Perfil p3", motivo: "Dados não verificados", estado: "Resolvida" },
+              ].map((d, i) => (
+                <div key={i} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border p-3">
+                  <div>
+                    <div className="text-sm font-medium">
+                      {d.tipo} · {d.alvo}
+                    </div>
+                    <div className="text-xs text-muted-foreground">{d.motivo}</div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge variant={d.estado === "Resolvida" ? "secondary" : "outline"}>
+                      {d.estado}
+                    </Badge>
+                    <Button size="sm" variant="ghost" onClick={() => toast.info("Ação registada (demonstração)")}>Tratar</Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {secao === "avaliacoes" && (
         <Card>
           <CardContent className="p-5">
@@ -265,16 +321,141 @@ function Admin() {
                     className="flex items-center justify-between rounded-lg border p-3"
                   >
                     <span className="text-sm">{c}</span>
-                    <Button size="sm" variant="ghost">
-                      Editar
-                    </Button>
+                    <div className="flex gap-1">
+                      <Button size="sm" variant="ghost" onClick={() => toast.info("Edição de categoria (demonstração)")}>
+                        <Pencil className="mr-1 size-3.5" />
+                        Editar
+                      </Button>
+                      <Button size="sm" variant="ghost" onClick={() => toast.info("Remoção de categoria (demonstração)")}>
+                        <Trash2 className="size-3.5" />
+                      </Button>
+                    </div>
                   </div>
                 )
               )}
             </div>
+            <div className="mt-4 rounded-lg border p-4">
+              <h3 className="mb-2 text-sm font-semibold">Nova categoria</h3>
+              <div className="flex flex-wrap gap-2">
+                <Input
+                  value={novaCategoria}
+                  onChange={(e) => setNovaCategoria(e.target.value)}
+                  placeholder="Nome da categoria"
+                  className="max-w-xs"
+                />
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    if (!novaCategoria.trim()) return;
+                    toast.success(`Categoria «${novaCategoria}» criada (demonstração)`);
+                    setNovaCategoria("");
+                  }}
+                >
+                  <Plus className="mr-1 size-3.5" />
+                  Adicionar
+                </Button>
+              </div>
+            </div>
           </CardContent>
         </Card>
+      )}
+
+      {secao === "utilizadores" && (
+        <Card>
+          <CardContent className="p-5">
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="font-semibold">Gestão de utilizadores</h2>
+              <Badge variant="outline">Todos os tipos</Badge>
+            </div>
+            <p className="mb-4 text-sm text-muted-foreground">
+              Lista consolidada de contas. O tipo «administrador» só é
+              atribuído internamente pelo operador, nunca através de
+              formulário público.
+            </p>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Utilizador</TableHead>
+                  <TableHead>Tipo</TableHead>
+                  <TableHead>Estado</TableHead>
+                  <TableHead>Último acesso</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {[
+                  { nome: "admin@proxipro.ai", tipo: "Administrador", estado: "Ativo", acesso: "Hoje, 09:12" },
+                  { nome: "ana.silva@exemplo.pt", tipo: "Cliente", estado: "Ativo", acesso: "Ontem" },
+                  { nome: "carlos.mendes@exemplo.pt", tipo: "Profissional", estado: "Ativo", acesso: "Há 2 dias" },
+                  { nome: "s.oficial@exemplo.pt", tipo: "Profissional", estado: "Pendente", acesso: "Há 5 dias" },
+                ].map((u, i) => (
+                  <TableRow key={i}>
+                    <TableCell className="text-sm font-medium">{u.nome}</TableCell>
+                    <TableCell><Badge variant={u.tipo === "Administrador" ? "secondary" : "outline"}>{u.tipo}</Badge></TableCell>
+                    <TableCell><Badge variant={u.estado === "Ativo" ? "secondary" : "outline"}>{u.estado}</Badge></TableCell>
+                    <TableCell className="text-sm text-muted-foreground">{u.acesso}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      )}
+
+      {secao === "planos" && (
+        <div className="space-y-4">
+          <Card>
+            <CardContent className="p-5">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="font-semibold">Gestão de planos</h2>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Os preços apresentados são hipóteses comerciais e ainda não
+                    são cobrados. A estrutura está preparada para ativar
+                    subscrições numa fase futura.
+                  </p>
+                </div>
+                <Badge variant="outline">Pré-lançamento</Badge>
+              </div>
+            </CardContent>
+          </Card>
+          <div className="grid gap-4 md:grid-cols-3">
+            {planos.map((p) => (
+              <Card key={p.nome} className={p.destaque ? "border-primary" : ""}>
+                <CardContent className="p-5">
+                  <div className="mb-3 flex items-center justify-between">
+                    <h3 className="font-semibold">{p.nome}</h3>
+                    {p.destaque && <Badge>Recomendado</Badge>}
+                  </div>
+                  <p className="text-2xl font-bold">
+                    {p.preco}
+                    <span className="text-sm font-normal text-muted-foreground">{p.periodo}</span>
+                  </p>
+                  <ul className="mt-4 space-y-1 text-sm text-muted-foreground">
+                    {p.recursos.map((r) => (
+                      <li key={r}>· {r}</li>
+                    ))}
+                  </ul>
+                  <div className="mt-4 flex items-center justify-between rounded-lg bg-muted/50 p-3">
+                    <span className="text-xs text-muted-foreground">
+                      Ativos: {planosAtivos[p.nome.toLowerCase()]?.[p.nome.toLowerCase() as "basic" | "pro" | "premium"] ?? 0}
+                    </span>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() =>
+                        toast.info(`Plano ${p.nome}: gestão de subscrições ainda não ativa`)
+                      }
+                    >
+                      Gerir
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
       )}
     </div>
   );
 }
+
