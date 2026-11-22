@@ -206,13 +206,13 @@ function Hero({
 }) {
   const tituloCompleto = titulo ? `${titulo} ${subtitulo}` : undefined;
   return (
-    <section className="border-b bg-gradient-to-b from-accent/40 to-background">
-      <div className="mx-auto max-w-5xl px-4 py-16 text-center md:px-6 md:py-24">
+    <section className="border-b bg-gradient-to-b from-accent/40 to-background animate-fade-in">
+      <div className="mx-auto max-w-5xl px-4 py-16 text-center md:px-6 md:py-24 animate-slide-up">
         <Badge variant="secondary" className="mb-4 gap-1.5">
           <Sparkles className="size-3.5 text-accent-2" />
           Plataforma de demonstração
         </Badge>
-        <h1 className="text-4xl font-bold tracking-tight md:text-6xl">
+        <h1 className="text-4xl font-bold tracking-tight md:text-6xl animate-pulse">
           {tituloCompleto ?? (
             <>
               Encontra o profissional certo.{" "}
@@ -224,7 +224,7 @@ function Hero({
           {descricao}
         </p>
 
-        <div className="mx-auto mt-8 max-w-3xl rounded-2xl border bg-card p-4 shadow-sm md:p-6">
+        <div className="mx-auto mt-8 max-w-3xl rounded-2xl border bg-card p-4 shadow-sm md:p-6 hover:shadow-lg transition-shadow duration-300">
           <div className="grid gap-3 md:grid-cols-2">
             <div className="space-y-1.5 text-left">
               <label className="text-sm font-medium">
@@ -248,11 +248,11 @@ function Hero({
             </div>
           </div>
           <div className="mt-4 flex flex-col gap-3 sm:flex-row">
-            <Button className="flex-1" onClick={onSearch}>
+            <Button className="flex-1 animate-bounce" onClick={onSearch}>
               <Search className="size-4" />
               Encontrar profissionais
             </Button>
-            <Button variant="outline" className="flex-1" onClick={onAI}>
+            <Button variant="outline" className="flex-1 animate-pulse" onClick={onAI}>
               <Bot className="size-4 text-accent-2" />
               Ajudar-me com IA
             </Button>
