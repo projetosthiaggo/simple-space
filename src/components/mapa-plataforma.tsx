@@ -342,7 +342,8 @@ export function MapaPlataforma({
         layer.addLayer(marker);
       });
     }
-  }, [visiveis, exibicao, localidadesAtivas, selecionado, onSelecionar]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visiveis, exibicao, localidadesAtivas, selecionado]);
 
   const centrarEmLocalidade = (localidade: string) => {
     const coord = COORDENADAS[localidade];
