@@ -1,25 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
-import {
-  Lock,
-  MapPin,
-  Users,
-  UserCheck,
-  Inbox,
-  LayoutGrid,
-  Star,
-  List,
-  Minus,
-  Plus,
-  Pencil,
-  Trash2,
-  X,
-  FileText,
-  TrendingUp,
-  CalendarHeart,
-  Eye,
-  Search,
-} from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Map as MapIcon, MapPin, Users, UserCheck, Inbox, LayoutGrid, Star, List, Minus, Plus, Pencil, Trash2, X, FileText, TrendingUp, CalendarHeart, Eye, Search, Lock, LocateFixed } from "lucide-react";
 import {
   Bar,
   BarChart,
@@ -46,6 +27,8 @@ import {
 } from "@/components/ui/chart";
 import { toast } from "sonner";
 import { profissionais, pedidos, categories } from "@/data/plataforma";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
 
 export const Route = createFileRoute("/admin/mapa")({
   component: AdminMapa,
@@ -59,44 +42,38 @@ function temAcessoAdmin(): boolean {
 type TipoEntidade = "cliente" | "profissional" | "pedido";
 type Exibicao = "quadros" | "icones" | "texto";
 
-interface PontoLocal {
-  x: number;
-  y: number;
-}
-
-const LOCALIDADES: Record<string, PontoLocal> = {
-  "Porto": { x: 42, y: 24 },
-  "Braga": { x: 48, y: 15 },
-  "Viana do Castelo": { x: 38, y: 8 },
-  "Aveiro": { x: 40, y: 40 },
-  "Coimbra": { x: 37, y: 52 },
-  "Lisboa": { x: 46, y: 72 },
-  "Santarém": { x: 55, y: 60 },
-  "Évora": { x: 60, y: 82 },
-  "Faro": { x: 68, y: 92 },
-  "Guarda": { x: 62, y: 38 },
-  "Castelo Branco": { x: 56, y: 44 },
-  "Viseu": { x: 52, y: 36 },
-  "Leiria": { x: 34, y: 56 },
-  "Setúbal": { x: 43, y: 78 },
+// Coordenadas aproximadas das localidades (Portugal continental)
+const COORDENADAS: Record<string, [number, number]> = {
+  "Porto": [41.15, -8.61],
+  "Braga": [41.55, -8.42],
+  "Viana do Castelo": [41.7, -8.83],
+  "Aveiro": [40.64, -8.65],
+  "Coimbra": [40.21, -8.42],
+  "Lisboa": [38.72, -9.14],
+  "Santarém": [39.24, -8.69],
+  "Évora": [38.57, -7.91],
+  "Faro": [37.01, -7.94],
+  "Guarda": [41.55, -6.99],
+  "Castelo Branco": [40.29, -7.2],
+  "Viseu": [40.65, -7.91],
+  "Leiria": [39.75, -8.8],
+  "Setúbal": [38.53, -8.93],
+  "Portalegre": [39.29, -7.43],
+  "Beja": [37.99, -8.01],
 };
 
 const CORES_TEMA: Record<string, string> = {
   cliente: "var(--color-chart-1)",
   profissional: "var(--color-chart-2)",
   pedido: "var(--color-chart-3)",
-  aprovado: "var(--color-chart-1)",
-  em_analise: "var(--color-chart-2)",
-  pendente: "var(--color-chart-3)",
-  suspenso: "var(--color-chart-4)",
 };
 
 const CLIENTES_DEMO = [
-  { id: "c1", nome: "Ana Silva", localidade: "Lisboa" },
-  { id: "c2", nome: "João Pereira", localidade: "Porto" },
-  { id: "c3", nome: "Miguel Santos", localidade: "Coimbra" },
-  { id: "c4", nome: "Rita Ferreira", localidade: "Braga" },
-  { id: "c5", nome: "Paulo Gomes", localidade: "Évora" },
+  { id: "c1", nome: "Ana Silva", localidade: "Lisboa", email: "ana.silva@exemplo.pt" },
+  { id: "c2", nome: "João Pereira", localidade: "Porto", email: "joao.pereira@exemplo.pt" },
+  { id: "c3", nome: "Miguel Santos", localidade: "Coimbra", email: "miguel.santos@exemplo.pt" },
+  { id: "c4", nome: "Rita Ferreira", localidade: "Braga", email: "rita.ferreira@exemplo.pt" },
+  { id: "c5", nome: "Paulo Gomes", localidade: "Évora", email: "paulo.gomes@exemplo.pt" },
 ];
 
 interface MapaEntidade {
@@ -120,8 +97,7 @@ function pontosIniciais(): MapaEntidade[] {
     detalhes: {
       "Nome completo": p.nome,
       Especialidade: p.especialidade,
-      Categoria:
-        categories.find((c) => c.id === p.categoria)?.nome ?? p.categoria,
+      Categoria: categories.find((c) => c.id === p.categoria)?.nome ?? p.categoria,
       Concelho: p.concelho,
       Distrito: p.distrito,
       PrecoIndicativo: p.precoIndicativo ?? "—",
@@ -139,11 +115,9 @@ function pontosIniciais(): MapaEntidade[] {
     estado: d.estado,
     detalhes: {
       Titulo: d.titulo,
-      Categoria:
-        categories.find((c) => c.id === d.categoria)?.nome ?? d.categoria,
+      Categoria: categories.find((c) => c.id === d.categoria)?.nome ?? d.categoria,
       Localidade: d.localidade,
-      Urgencia:
-        d.urgencia === "alta" ? "Alta" : d.urgencia === "media" ? "Média" : "Baixa",
+      Urgencia: d.urgencia === "alta" ? "Alta" : d.urgencia === "media" ? "Média" : "Baixa",
       Estado: d.estado,
       DataCriacao: d.dataCriacao,
       Orçamento: d.orcamento ?? "—",
@@ -159,6 +133,7 @@ function pontosIniciais(): MapaEntidade[] {
     estado: "ativo",
     detalhes: {
       Nome: c.nome,
+      Email: c.email,
       Localidade: c.localidade,
       Tipo: "Cliente",
       Estado: "Ativo",
@@ -180,7 +155,7 @@ const LENDA: { tipo: TipoEntidade; label: string; cor: string }[] = [
   { tipo: "pedido", label: "Pedidos", cor: CORES_TEMA.pedido },
 ];
 
-function AdminMapa() {
+export default function AdminMapa() {
   const [entidades, setEntidades] = useState<MapaEntidade[]>(pontosIniciais);
   const [filtros, setFiltros] = useState<Record<TipoEntidade, boolean>>({
     cliente: true,
@@ -191,7 +166,205 @@ function AdminMapa() {
   const [selecionado, setSelecionado] = useState<string | null>(null);
   const [editando, setEditando] = useState<MapaEntidade | null>(null);
   const [exibicao, setExibicao] = useState<Exibicao>("quadros");
-  const [zoom, setZoom] = useState(1);
+  const [zoom, setZoom] = useState(6.5);
+
+  const mapRef = useRef<L.Map | null>(null);
+  const mapDivRef = useRef<HTMLDivElement | null>(null);
+  const markersLayerRef = useRef<L.LayerGroup | null>(null);
+
+  const visiveis = useMemo(
+    () =>
+      entidades.filter(
+        (e) =>
+          filtros[e.tipo] &&
+          (busca.trim() === "" ||
+            e.nome.toLowerCase().includes(busca.toLowerCase()) ||
+            e.localidade.toLowerCase().includes(busca.toLowerCase())),
+      ),
+    [entidades, filtros, busca],
+  );
+
+  const localidadesAtivas = useMemo(
+    () => Array.from(new Set(visiveis.map((e) => e.localidade))),
+    [visiveis],
+  );
+
+  const total = visiveis.length;
+  const porTipo: Record<TipoEntidade, number> = {
+    cliente: visiveis.filter((e) => e.tipo === "cliente").length,
+    profissional: visiveis.filter((e) => e.tipo === "profissional").length,
+    pedido: visiveis.filter((e) => e.tipo === "pedido").length,
+  };
+
+  const graficoTipos = [
+    { tipo: "Clientes", value: porTipo.cliente },
+    { tipo: "Profissionais", value: porTipo.profissional },
+    { tipo: "Pedidos", value: porTipo.pedido },
+  ];
+
+  const graficoLocal = localidadesAtivas.map((l) => ({
+    localidade: l,
+    Clientes: visiveis.filter((e) => e.tipo === "cliente" && e.localidade === l).length,
+    Profissionais: visiveis.filter((e) => e.tipo === "profissional" && e.localidade === l).length,
+    Pedidos: visiveis.filter((e) => e.tipo === "pedido" && e.localidade === l).length,
+  }));
+
+  const configuracaoTipos: ChartConfig = {
+    Clientes: { label: "Clientes", color: CORES_TEMA.cliente },
+    Profissionais: { label: "Profissionais", color: CORES_TEMA.profissional },
+    Pedidos: { label: "Pedidos", color: CORES_TEMA.pedido },
+  };
+
+  const configuracaoLocal: ChartConfig = {
+    Clientes: { label: "Clientes", color: CORES_TEMA.cliente },
+    Profissionais: { label: "Profissionais", color: CORES_TEMA.profissional },
+    Pedidos: { label: "Pedidos", color: CORES_TEMA.pedido },
+  };
+
+  const selecionada = visiveis.find((e) => e.id === selecionado) ?? null;
+
+  // Inicialização do mapa Leaflet
+  useEffect(() => {
+    if (!mapDivRef.current || mapRef.current) return;
+
+    const map = L.map(mapDivRef.current, {
+      center: [40.2, -8.4],
+      zoom,
+      scrollWheelZoom: false,
+      zoomControl: false,
+      attributionControl: true,
+    });
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+      attribution:
+        '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap</a> contributors',
+    }).addTo(map);
+
+    L.control.zoom({ position: "bottomright" }).addTo(map);
+    L.control.scale({ imperial: false, position: "bottomleft" }).addTo(map);
+
+    const layer = L.layerGroup().addTo(map);
+    mapRef.current = map;
+    markersLayerRef.current = layer;
+
+    return () => {
+      map.remove();
+      mapRef.current = null;
+      markersLayerRef.current = null;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Zoom externo controlado pelo botão
+  useEffect(() => {
+    if (mapRef.current && mapRef.current.getZoom() !== zoom) {
+      mapRef.current.setZoom(zoom);
+    }
+  }, [zoom]);
+
+  // Pontos no mapa
+  useEffect(() => {
+    const map = mapRef.current;
+    const layer = markersLayerRef.current;
+    if (!map || !layer) return;
+
+    layer.clearLayers();
+
+    if (exibicao === "quadros" || exibicao === "texto") {
+      // Marcadores por localidade (agrupados por tipo)
+      localidadesAtivas.forEach((localidade) => {
+        const coord = COORDENADAS[localidade];
+        if (!coord) return;
+
+        const grupos: { tipo: TipoEntidade; count: number }[] = (
+          ["cliente", "profissional", "pedido"] as TipoEntidade[]
+        ).map((t) => ({
+          tipo: t,
+          count: visiveis.filter((e) => e.tipo === t && e.localidade === localidade).length,
+        }));
+
+        const html = `<div class="mapa-marker-ciclo">
+          <div class="mapa-marker-ciclo-tipo">${grupos
+            .filter((g) => g.count > 0)
+            .map(
+              (g) =>
+                `<span class="mapa-marker-ciclo-ponto" style="background:${CORES_TEMA[g.tipo]}"></span>`,
+            )
+            .join("")}</div>
+          <div class="mapa-marker-ciclo-label">${localidade}</div>
+        </div>`;
+
+        const marker = L.marker(coord, {
+          icon: L.divIcon({
+            html,
+            className: "",
+            iconSize: [96, 44],
+            iconAnchor: [48, 22],
+          }),
+          title: localidade,
+        }).bindTooltip(
+          localidade,
+          { direction: "top", offset: [0, -12] },
+        );
+
+        marker.on("click", () => {
+          // Seleciona o primeiro registo desta localidade
+          const primeiro = visiveis.find((e) => e.localidade === localidade);
+          if (primeiro) setSelecionado(primeiro.id);
+        });
+
+        layer.addLayer(marker);
+      });
+    } else {
+      // Exibição por ícones (um por registo)
+      visiveis.forEach((e) => {
+        const coord = COORDENADAS[e.localidade];
+        if (!coord) return;
+        const cor = CORES_TEMA[e.tipo];
+        const ehSel = e.id === selecionado;
+        const tamanho = ehSel ? 40 : 30;
+
+        const html = `<button type="button" class="mapa-icone-ponto ${ehSel ? "mapa-icone-ponto--sel" : ""}" style="background:${cor};width:${tamanho}px;height:${tamanho}px" title="${e.nome}">
+          <span class="mapa-icone-ponto-label">${LENDAS().find((l) => l.tipo === e.tipo)?.label.replace(/s$/, "")}</span>
+        </button>`;
+
+        const marker = L.marker(coord, {
+          icon: L.divIcon({
+            html,
+            className: "",
+            iconSize: [tamanho, tamanho],
+            iconAnchor: [tamanho / 2, tamanho / 2],
+          }),
+        });
+
+        marker.on("click", () => setSelecionado(ehSel ? null : e.id));
+
+        layer.addLayer(marker);
+      });
+    }
+  }, [visiveis, exibicao, localidadesAtivas, selecionado]);
+
+  const remover = (id: string) => {
+    setEntidades((prev) => prev.filter((e) => e.id !== id));
+    setSelecionado(null);
+    setEditando(null);
+    toast.success("Registo removido do mapa (demonstração)");
+  };
+
+  const salvarEdicao = () => {
+    if (!editando) return;
+    setEntidades((prev) => prev.map((e) => (e.id === editando.id ? editando : e)));
+    setEditando(null);
+    toast.success("Registo atualizado no mapa (demonstração)");
+  };
+
+  const centrarEmLocalidade = (localidade: string) => {
+    const coord = COORDENADAS[localidade];
+    if (coord && mapRef.current) {
+      mapRef.current.panTo(coord, 11);
+    }
+  };
 
   if (!temAcessoAdmin()) {
     return (
@@ -211,85 +384,81 @@ function AdminMapa() {
     );
   }
 
-  const visiveis = entidades.filter(
-    (e) =>
-      filtros[e.tipo] &&
-      (busca.trim() === "" ||
-        e.nome.toLowerCase().includes(busca.toLowerCase()) ||
-        e.localidade.toLowerCase().includes(busca.toLowerCase())),
-  );
-
-  const porLocalidade = (tipo: TipoEntidade, localidade: string) =>
-    visiveis.filter((e) => e.tipo === tipo && e.localidade === localidade).length;
-
-  const pontosPorLocal: Record<string, PontoLocal> = {};
-  visiveis.forEach((e) => {
-    pontosPorLocal[e.localidade] =
-      LOCALIDADES[e.localidade] ?? { x: 50 + (e.localidade.length * 7) % 20, y: 50 };
-  });
-
-  const total = visiveis.length;
-  const porTipo: Record<TipoEntidade, number> = {
-    cliente: visiveis.filter((e) => e.tipo === "cliente").length,
-    profissional: visiveis.filter((e) => e.tipo === "profissional").length,
-    pedido: visiveis.filter((e) => e.tipo === "pedido").length,
-  };
-
-  const graficoTipos: { tipo: string; value: number }[] = [
-    { tipo: "Clientes", value: porTipo.cliente },
-    { tipo: "Profissionais", value: porTipo.profissional },
-    { tipo: "Pedidos", value: porTipo.pedido },
-  ];
-
-  const graficoLocal: { localidade: string; Clientes: number; Profissionais: number; Pedidos: number }[] =
-    Object.keys(pontosPorLocal).map((l) => ({
-      localidade: l,
-      Clientes: porLocalidade("cliente", l),
-      Profissionais: porLocalidade("profissional", l),
-      Pedidos: porLocalidade("pedido", l),
-    }));
-
-  const configuracaoTipos: ChartConfig = {
-    Clientes: { label: "Clientes", color: CORES_TEMA.cliente },
-    Profissionais: { label: "Profissionais", color: CORES_TEMA.profissional },
-    Pedidos: { label: "Pedidos", color: CORES_TEMA.pedido },
-  };
-
-  const configuracaoLocal: ChartConfig = {
-    Clientes: { label: "Clientes", color: CORES_TEMA.cliente },
-    Profissionais: { label: "Profissionais", color: CORES_TEMA.profissional },
-    Pedidos: { label: "Pedidos", color: CORES_TEMA.pedido },
-  };
-
-  const selecionada = visiveis.find((e) => e.id === selecionado) ?? null;
-
-  const remover = (id: string) => {
-    setEntidades((prev) => prev.filter((e) => e.id !== id));
-    setSelecionado(null);
-    setEditando(null);
-    toast.success("Registo removido do mapa (demonstração)");
-  };
-
-  const salvarEdicao = () => {
-    if (!editando) return;
-    setEntidades((prev) => prev.map((e) => (e.id === editando.id ? editando : e)));
-    setEditando(null);
-    toast.success("Registo atualizado no mapa (demonstração)");
-  };
-
-  const tamanhoPonto = (tipo: TipoEntidade) =>
-    (tipo === "profissional" ? 14 : tipo === "pedido" ? 11 : 12) * zoom;
-
-  const posicaoPonto = (id: string, tipo: TipoEntidade, localidade: string) => {
-    const base = pontosPorLocal[localidade] ?? { x: 50, y: 50 };
-    const grupo = visiveis.filter((e) => e.tipo === tipo && e.localidade === localidade);
-    const idx = grupo.findIndex((g) => g.id === id);
-    const desvio = (idx - (grupo.length - 1) / 2) * 3.2 * zoom;
-    return { x: base.x + desvio, y: base.y };
-  };
-
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 md:px-6">
+      {/* CSS dos marcadores */}
+      <style>{`
+        .mapa-marker-ciclo {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 4px;
+          pointer-events: none;
+        }
+        .mapa-marker-ciclo-tipo {
+          display: flex;
+          gap: 4px;
+        }
+        .mapa-marker-ciclo-ponto {
+          width: 10px;
+          height: 10px;
+          border-radius: 999px;
+          border: 2px solid var(--color-background);
+          box-shadow: 0 2px 6px rgb(0 0 0 / 20%);
+        }
+        .mapa-marker-ciclo-label {
+          font-size: 10px;
+          font-weight: 600;
+          letter-spacing: 0.04em;
+          text-transform: uppercase;
+          color: var(--color-muted-foreground);
+          background: color-mix(in srgb, var(--color-background) 85%, transparent);
+          padding: 1px 6px;
+          border-radius: 999px;
+        }
+        .mapa-icone-ponto {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 999px;
+          border: 2px solid var(--color-background);
+          box-shadow: 0 4px 10px rgb(0 0 0 / 25%);
+          cursor: pointer;
+          transition: transform 0.15s ease;
+        }
+        .mapa-icone-ponto:hover {
+          transform: scale(1.1);
+        }
+        .mapa-icone-ponto--sel {
+          outline: 3px solid var(--color-ring);
+          outline-offset: 2px;
+        }
+        .mapa-icone-ponto-label {
+          font-size: 9px;
+          font-weight: 700;
+          color: var(--color-background);
+        }
+        .leaflet-container {
+          background: var(--color-muted);
+        }
+        .leaflet-tooltip {
+          background: var(--color-popover);
+          border: 1px solid var(--color-border);
+          color: var(--color-popover-foreground);
+          font-size: 12px;
+          font-weight: 500;
+          border-radius: 6px;
+          padding: 4px 8px;
+        }
+        .leaflet-tooltip-top:before {
+          border-top-color: var(--color-popover);
+        }
+        .leaflet-control-attribution {
+          font-size: 9px;
+          background: color-mix(in srgb, var(--color-background) 80%, transparent);
+        }
+      `}</style>
+
       <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
         <div>
           <Badge variant="secondary" className="mb-2">
@@ -297,32 +466,30 @@ function AdminMapa() {
             Painel de administração
           </Badge>
           <h1 className="text-3xl font-bold tracking-tight">
-            Mapa da plataforma
+            Mapa online da plataforma
           </h1>
           <p className="mt-1 text-muted-foreground">
-            Localiza clientes, profissionais e pedidos. Clica num ponto para
-            ver, editar ou remover os dados (demonstração).
+            Mapa real (OpenStreetMap) com clientes, profissionais e pedidos.
+            Clica num registo para ver, editar ou remover os dados
+            (demonstração).
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
             <Link
               to="/admin"
               className="flex items-center gap-2 rounded-xl border bg-muted/40 px-4 py-2.5 text-sm font-medium transition hover:bg-muted"
             >
-              <MapPin className="size-4" />
-              <span>Mapa interativo</span>
-              <span className="ml-1 rounded-full bg-primary px-2 py-0.5 text-[10px] font-semibold text-primary-foreground">
-                novo
-              </span>
+              <MapIcon className="size-4" />
+              <span>Painel principal</span>
             </Link>
           </div>
         </div>
-                  <Button
-            variant="outline"
-            size="sm"
-            onClick={() => (window.location.href = "/admin")}
-          >
-            Voltar ao resumo
-          </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => (window.location.href = "/admin")}
+        >
+          Voltar ao resumo
+        </Button>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
@@ -337,43 +504,54 @@ function AdminMapa() {
                       size="icon"
                       variant="outline"
                       className="size-8"
-                      onClick={() => setZoom((z) => Math.max(0.5, +(z - 0.15).toFixed(2)))}
+                      onClick={() => setZoom((z) => Math.max(4, +(z - 0.5).toFixed(2)))}
                       aria-label="Diminuir zoom"
                     >
                       <Minus className="size-3.5" />
                     </Button>
-                    <span className="w-12 text-center text-xs font-medium tabular-nums text-muted-foreground">
-                      {Math.round(zoom * 100)}%
+                    <span className="w-14 text-center text-xs font-medium tabular-nums text-muted-foreground">
+                      Zoom {zoom}
                     </span>
                     <Button
                       size="icon"
                       variant="outline"
                       className="size-8"
-                      onClick={() => setZoom((z) => Math.min(2, +(z + 0.15).toFixed(2)))}
+                      onClick={() => setZoom((z) => Math.min(15, +(z + 0.5).toFixed(2)))}
                       aria-label="Aumentar zoom"
                     >
                       <Plus className="size-3.5" />
                     </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        mapRef.current?.setView([40.2, -8.4], 6.5);
+                        setZoom(6.5);
+                      }}
+                    >
+                      <LocateFixed className="mr-1 size-3.5" />
+                      Portugal
+                    </Button>
                   </div>
-                  <div className="flex items-center gap-1.5">
-                    {(
-                      [
-                        ["quadros", LayoutGrid, "Quadros"],
-                        ["icones", MapPin, "Ícones"],
-                        ["texto", List, "Texto"],
-                      ] as [Exibicao, any, string][]
-                    ).map(([id, Icone, label]) => (
-                      <Button
-                        key={id}
-                        size="sm"
-                        variant={exibicao === id ? "default" : "ghost"}
-                        onClick={() => setExibicao(id)}
-                      >
-                        <Icone className="mr-1 size-3.5" />
-                        {label}
-                      </Button>
-                    ))}
-                  </div>
+                                  <div className="flex items-center gap-1.5">
+                  {(
+                    [
+                      ["quadros", LayoutGrid, "Ciclo"],
+                      ["icones", MapPin, "Ícones"],
+                      ["texto", List, "Texto"],
+                    ] as [Exibicao, any, string][]
+                  ).map(([id, Icone, label]) => (
+                    <Button
+                      key={id}
+                      size="sm"
+                      variant={exibicao === id ? "default" : "ghost"}
+                      onClick={() => setExibicao(id)}
+                    >
+                      <Icone className="mr-1 size-3.5" />
+                      {label}
+                    </Button>
+                  ))}
+                </div>
                 </div>
                 <div className="flex flex-wrap items-center gap-3">
                   <div className="flex items-center gap-2">
@@ -407,107 +585,12 @@ function AdminMapa() {
                 </div>
               </div>
 
-              {/* SUPERFÍCIE DO MAPA */}
-              <div className="relative aspect-[4/3] overflow-hidden bg-muted/30 sm:aspect-[16/10]">
-                {/* grade estilo mapa */}
-                <div
-                  className="pointer-events-none absolute inset-0 opacity-40"
-                  style={{
-                    backgroundImage:
-                      "linear-gradient(to right, hsl(var(--border)) 1px, transparent 1px), linear-gradient(to bottom, hsl(var(--border)) 1px, transparent 1px)",
-                    backgroundSize: `${28 * zoom}px ${28 * zoom}px`,
-                  }}
-                />
-                <div
-                  className="absolute transition-transform duration-200"
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    transform: `scale(${zoom})`,
-                    transformOrigin: "center center",
-                  }}
-                >
-                  {Object.entries(pontosPorLocal).map(([localidade, pos]) => {
-                    const temPonto = visiveis.some((e) => e.localidade === localidade);
-                    if (!temPonto) return null;
-                    return (
-                      <div
-                        key={localidade}
-                        className="absolute -translate-x-1/2 -translate-y-1/2"
-                        style={{ left: `${pos.x}%`, top: `${pos.y}%` }}
-                      >
-                        {exibicao === "texto" && (
-                          <div className="whitespace-nowrap rounded bg-background/80 px-1 py-0.5 text-[9px] uppercase tracking-wider text-muted-foreground">
-                            {localidade}
-                          </div>
-                        )}
-                        {exibicao !== "texto" && (
-                          <div className="flex flex-col items-center gap-1">
-                            <div className="flex gap-1">
-                              {LENDAS().filter((l) => porLocalidade(l.tipo, localidade) > 0).map((l) => (
-                                <span
-                                  key={l.tipo}
-                                  className="size-2 rounded-full ring-2 ring-background"
-                                  style={{ backgroundColor: l.cor }}
-                                />
-                              ))}
-                            </div>
-                            <div className="text-[10px] font-medium text-muted-foreground">
-                              {localidade}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-
-                  {exibicao !== "texto" &&
-                    visiveis.map((e) => {
-                      const { x, y } = posicaoPonto(e.id, e.tipo, e.localidade);
-                      const Icone = ICONE_POR_TIPO[e.tipo];
-                      const cor = CORES_TEMA[e.tipo];
-                      const ehSel = e.id === selecionado;
-                      const tam = tamanhoPonto(e.tipo);
-                      return (
-                        <button
-                          key={e.id}
-                          onClick={() => setSelecionado(ehSel ? null : e.id)}
-                          className={`absolute -translate-x-1/2 -translate-y-1/2 rounded-full border-2 shadow-sm transition ${
-                            ehSel
-                              ? "z-10 border-foreground ring-4 ring-foreground/20"
-                              : "border-background hover:z-10 hover:scale-110"
-                          }`}
-                          style={{
-                            left: `${x}%`,
-                            top: `${y}%`,
-                            width: tam,
-                            height: tam,
-                            backgroundColor: cor,
-                          }}
-                          title={e.nome}
-                        >
-                          {exibicao === "icones" && (
-                            <Icone
-                              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-white"
-                              style={{ width: tam * 0.55, height: tam * 0.55 }}
-                            />
-                          )}
-                          {exibicao === "quadros" && (
-                            <span
-                              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded bg-background/90 px-1 text-[9px] font-bold text-foreground"
-                            >
-                              {LENDAS().find((l) => l.tipo === e.tipo)?.label
-                                .replace(/s$/, "")}
-                            </span>
-                          )}
-                        </button>
-                      );
-                    })}
-                </div>
-
+              {/* MAPA REAL */}
+              <div className="relative h-[420px] w-full sm:h-[520px]">
+                <div ref={mapDivRef} className="absolute inset-0 z-0" />
                 {visiveis.length === 0 && (
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <p className="text-sm text-muted-foreground">
+                  <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center">
+                    <p className="rounded-lg bg-background/90 px-4 py-2 text-sm shadow">
                       Sem registos correspondentes aos filtros.
                     </p>
                   </div>
@@ -589,7 +672,7 @@ function AdminMapa() {
               <CardContent className="p-5">
                 <div className="mb-3 flex items-center gap-2">
                   <TrendingUp className="size-4 text-muted-foreground" />
-                  <h3 className="text-sm font-semibold">Repartição por distritos</h3>
+                  <h3 className="text-sm font-semibold">Tendências por localidade</h3>
                 </div>
                 <ChartContainer config={configuracaoLocal} className="h-56 aspect-auto w-full">
                   <LineChart data={graficoLocal}>
@@ -652,11 +735,9 @@ function AdminMapa() {
                     <MapPin className="size-5 text-muted-foreground" />
                     <div>
                       <p className="text-lg font-bold leading-none">
-                        {Object.keys(pontosPorLocal).length}
+                        {localidadesAtivas.length}
                       </p>
-                      <p className="text-xs text-muted-foreground">
-                        Localidades
-                      </p>
+                      <p className="text-xs text-muted-foreground">Localidades</p>
                     </div>
                   </div>
                 </div>
@@ -692,7 +773,8 @@ function AdminMapa() {
               <div className="border-b p-4">
                 <h2 className="font-semibold">Registos no mapa</h2>
                 <p className="text-sm text-muted-foreground">
-                  Selecciona um registo para ver os detalhes no painel lateral.
+                  Selecciona um registo para ver os detalhes no painel lateral
+                  ou centra o mapa numa localidade.
                 </p>
               </div>
               <div className="divide-y">
@@ -700,14 +782,16 @@ function AdminMapa() {
                   const Icone = ICONE_POR_TIPO[e.tipo];
                   const cor = CORES_TEMA[e.tipo];
                   return (
-                    <button
+                    <div
                       key={e.id}
-                      onClick={() => setSelecionado(e.id)}
                       className={`flex w-full items-center justify-between gap-3 p-4 text-left transition hover:bg-muted/40 ${
                         e.id === selecionado ? "bg-muted/60" : ""
                       }`}
                     >
-                      <div className="flex items-center gap-3">
+                      <button
+                        className="flex flex-1 items-center gap-3 text-left"
+                        onClick={() => setSelecionado(e.id)}
+                      >
                         <span
                           className="flex size-9 shrink-0 items-center justify-center rounded-full ring-2 ring-background"
                           style={{ backgroundColor: cor }}
@@ -720,13 +804,22 @@ function AdminMapa() {
                             {e.localidade} · {e.extra}
                           </div>
                         </div>
+                      </button>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-7 px-2 text-xs"
+                          onClick={() => centrarEmLocalidade(e.localidade)}
+                        >
+                          <MapPin className="mr-1 size-3" />
+                          Centrar
+                        </Button>
+                        <span className="rounded-full border px-2 py-0.5 text-xs">
+                          {LENDAS().find((l) => l.tipo === e.tipo)?.label.replace(/s$/, "")}
+                        </span>
                       </div>
-                      <span
-                        className="rounded-full border px-2 py-0.5 text-xs"
-                      >
-                        {LENDAS().find((l) => l.tipo === e.tipo)?.label.replace(/s$/, "")}
-                      </span>
-                    </button>
+                    </div>
                   );
                 })}
               </div>
