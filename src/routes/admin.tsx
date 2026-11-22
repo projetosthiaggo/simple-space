@@ -77,7 +77,7 @@ import {
   type Pedido,
 } from "@/data/plataforma";
 import { MapaPlataforma } from "@/components/mapa-plataforma";
-import { LayoutGrid, LayoutList, LayoutGrid2, Minus, Plus as PlusZoom, GripVertical, Image as ImageIcon, Megaphone, Home, Repeat, Upload } from "lucide-react";
+import { LayoutGrid, LayoutList, Minus, Plus as PlusZoom, GripVertical, Image as ImageIcon, Megaphone, Home, Repeat, Upload } from "lucide-react";
 
 // ===== Utilitários de modo de exibição e reordenação por arrastar/soltar =====
 
@@ -146,7 +146,7 @@ function ControlesExibicao({
 }) {
   const botoes: { id: ModoExibicao; Icone: typeof LayoutGrid; label: string }[] = [
     { id: "quadros", Icone: LayoutGrid, label: "Quadros" },
-    { id: "icones", Icone: LayoutGrid2, label: "Ícones" },
+    { id: "icones", Icone: LayoutGrid, label: "Ícones" },
     { id: "texto", Icone: LayoutList, label: "Texto" },
   ];
   return (

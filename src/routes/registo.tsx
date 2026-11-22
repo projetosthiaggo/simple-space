@@ -31,9 +31,8 @@ import { categorias } from "@/data/plataforma";
 
 export const Route = createFileRoute("/registo")({
   component: Registo,
-  validateSearch: (search: Record<string, unknown>): { tipo?: string } => ({
-    tipo: typeof search.tipo === "string" ? search.tipo : undefined,
-  }),
+  validateSearch: (search: Record<string, unknown>): { tipo?: string } =>
+    typeof search["tipo"] === "string" ? { tipo: search["tipo"] } : {},
 });
 
 function Registo() {
@@ -45,8 +44,6 @@ function Registo() {
 
   function submeter(ev: React.FormEvent) {
     ev.preventDefault();
-    const tipo =
-      tipo === "cliente" ? "cliente" : "profissional";
     localStorage.setItem("pp-ai-tipo", tipo);
     toast.success(
       tipo === "cliente"

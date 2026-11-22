@@ -30,7 +30,7 @@ import { profissionais, pedidos, categories, distritos } from "@/data/plataforma
 import * as L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
-export const Route = createFileRoute("/admin/mapa")({
+export const Route = createFileRoute("/admin-mapa")({
   component: AdminMapa,
 });
 
