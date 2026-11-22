@@ -79,6 +79,14 @@ import {
 } from "@/data/plataforma";
 import { MapaPlataforma } from "@/components/mapa-plataforma";
 import { LayoutGrid, LayoutList, Minus, Plus as PlusZoom, GripVertical, Image as ImageIcon, Megaphone, Home, Repeat, Upload } from "lucide-react";
+import {
+  lerPaginaInicial,
+  gravarPaginaInicial,
+  lerBanners,
+  gravarBanners,
+  type Banner,
+  type TamanhoBanner,
+} from "@/lib/persistencia-admin";
 
 // ===== Utilitários de modo de exibição e reordenação por arrastar/soltar =====
 
@@ -459,29 +467,40 @@ function Admin() {
     planos.map((p) => p.nome),
   );
 
-  // ===== Estado da secção "Editar página inicial" =====
-  const [heroTitulo, setHeroTitulo] = useState("Encontra o profissional certo.");
-  const [heroSubtitulo, setHeroSubtitulo] = useState("Sem complicações.");
-  const [heroDescricao, setHeroDescricao] = useState(
-    "Explica-nos o que precisas. A ProxiPro AI ajuda-te a encontrar profissionais adequados à tua necessidade.",
-  );
-  const [secTitulo, setSecTitulo] = useState("És profissional? Encontra novos clientes.");
-  const [secApoio, setSecApoio] = useState(
-    "Cria o teu perfil, apresenta os teus serviços e recebe oportunidades de trabalho.",
-  );
-  const [ordemCategoriasPagina, setOrdemCategoriasPagina] = useState<CategoryId[]>(() =>
-    categorias.map((c) => c.id),
-  );
-  const [ordemBeneficios, setOrdemBeneficios] = useState<string[]>(() =>
-    [
+  // ===== Estado da secção "Editar página inicial" (persistido) =====
+  const [heroTitulo, setHeroTitulo] = useState(() => lerPaginaInicial().heroTitulo);
+  const [heroSubtitulo, setHeroSubtitulo] = useState(() => lerPaginaInicial().heroSubtitulo);
+  const [heroDescricao, setHeroDescricao] = useState(() => lerPaginaInicial().heroDescricao);
+  const [secTitulo, setSecTitulo] = useState(() => lerPaginaInicial().secTitulo);
+  const [secApoio, setSecApoio] = useState(() => lerPaginaInicial().secApoio);
+  const [ordemCategoriasPagina, setOrdemCategoriasPagina] = useState<CategoryId[]>(() => {
+    const guardado = lerPaginaInicial().ordemCategorias;
+    return guardado.length ? guardado : categorias.map((c) => c.id);
+  });
+  const [ordemBeneficios, setOrdemBeneficios] = useState<string[]>(() => {
+    const guardado = lerPaginaInicial().ordemBeneficios;
+    return guardado.length ? guardado : [
       "Perfil profissional com portefólio",
       "Receção de pedidos de clientes",
       "Mensagens e propostas",
       "Estatísticas do teu perfil",
       "Disponibilidade à medida",
       "Avaliações reais",
-    ],
-  );
+    ];
+  });
+
+  /** Guarda no estado local E persiste em localStorage. */
+  const persistirPaginaInicial = () => {
+    gravarPaginaInicial({
+      heroTitulo,
+      heroSubtitulo,
+      heroDescricao,
+      secTitulo,
+      secApoio,
+      ordemCategorias: ordemCategoriasPagina,
+      ordemBeneficios,
+    });
+  };
   const propsCategorias = usarReordenacao<{ id: string }>(
     ordemCategoriasPagina.map((id) => ({ id })),
     (nova) => setOrdemCategoriasPagina(nova.map((c) => c.id as CategoryId)),
@@ -491,22 +510,9 @@ function Admin() {
     (nova) => setOrdemBeneficios(nova.map((b) => b.id)),
   );
 
-  // ===== Estado da secção "Divulgação" (banners) =====
-  type TamanhoBanner = "pequeno" | "medio" | "grande";
-  interface Banner {
-    id: string;
-    titulo: string;
-    texto: string;
-    tamanho: TamanhoBanner;
-    inicio: string;
-    termino: string;
-    vezes: number;
-    imagem: string | null;
-  }
-  const [banners, setBanners] = useState<Banner[]>([
-    { id: "b1", titulo: "Promoção de verão", texto: "Regista-te e ganha 10% de desconto", tamanho: "pequeno", inicio: "", termino: "", vezes: 0, imagem: null },
-    { id: "b2", titulo: "Novo plano Premium", texto: "Ferramentas avançadas de IA", tamanho: "grande", inicio: "", termino: "", vezes: 3, imagem: null },
-  ]);
+  // ===== Estado da secção "Divulgação" (banners, persistido) =====
+  const [banners, setBanners] = useState<Banner[]>(() => lerBanners());
+  const persistirBanners = (lista: Banner[]) => { gravarBanners(lista); };
   const [bannerEditar, setBannerEditar] = useState<string | null>(null);
   const [formTitulo, setFormTitulo] = useState("");
   const [formTexto, setFormTexto] = useState("");
@@ -542,11 +548,11 @@ function Admin() {
       vezes: Math.max(0, Number(formVezes) || 0),
       imagem: formImagem,
     };
-    setBanners((atual) =>
-      bannerEditar
-        ? atual.map((b) => (b.id === bannerEditar ? banner : b))
-        : [...atual, banner],
-    );
+    const novaLista = bannerEditar
+      ? banners.map((b) => (b.id === bannerEditar ? banner : b))
+      : [...banners, banner];
+    setBanners(novaLista);
+    persistirBanners(novaLista);
     limparFormBanner();
     toast.success(bannerEditar ? "Banner atualizado." : "Banner criado.");
   };
@@ -563,7 +569,9 @@ function Admin() {
   };
 
   const removerBanner = (id: string) => {
-    setBanners((atual) => atual.filter((b) => b.id !== id));
+    const novaLista = banners.filter((b) => b.id !== id);
+    setBanners(novaLista);
+    persistirBanners(novaLista);
     if (bannerEditar === id) limparFormBanner();
     toast.info("Banner removido.");
   };
@@ -1818,7 +1826,7 @@ function Admin() {
                         onChange={(e) => setHeroDescricao(e.target.value)}
                       />
                     </div>
-                    <Button size="sm" onClick={() => toast.success("Conteúdo do hero guardado.")}>Guardar</Button>
+                    <Button size="sm" onClick={() => { persistirPaginaInicial(); toast.success("Conteúdo do hero guardado."); }}>Guardar</Button>
                   </CardContent>
                 </Card>
                 <Card>
@@ -1876,7 +1884,7 @@ function Admin() {
                         </div>
                       ))}
                     </div>
-                    <Button size="sm" onClick={() => toast.success("Secção de profissionais guardada.")}>Guardar</Button>
+                    <Button size="sm" onClick={() => { persistirPaginaInicial(); toast.success("Secção de profissionais guardada."); }}>Guardar</Button>
                   </CardContent>
                 </Card>
               </div>
