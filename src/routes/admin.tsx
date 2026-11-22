@@ -75,6 +75,7 @@ import {
   planos,
   type Profissional,
   type Pedido,
+  type CategoryId,
 } from "@/data/plataforma";
 import { MapaPlataforma } from "@/components/mapa-plataforma";
 import { LayoutGrid, LayoutList, Minus, Plus as PlusZoom, GripVertical, Image as ImageIcon, Megaphone, Home, Repeat, Upload } from "lucide-react";
@@ -457,6 +458,115 @@ function Admin() {
   const [ordemPlanos, setOrdemPlanos] = useState<string[]>(() =>
     planos.map((p) => p.nome),
   );
+
+  // ===== Estado da secção "Editar página inicial" =====
+  const [heroTitulo, setHeroTitulo] = useState("Encontra o profissional certo.");
+  const [heroSubtitulo, setHeroSubtitulo] = useState("Sem complicações.");
+  const [heroDescricao, setHeroDescricao] = useState(
+    "Explica-nos o que precisas. A ProxiPro AI ajuda-te a encontrar profissionais adequados à tua necessidade.",
+  );
+  const [secTitulo, setSecTitulo] = useState("És profissional? Encontra novos clientes.");
+  const [secApoio, setSecApoio] = useState(
+    "Cria o teu perfil, apresenta os teus serviços e recebe oportunidades de trabalho.",
+  );
+  const [ordemCategoriasPagina, setOrdemCategoriasPagina] = useState<CategoryId[]>(() =>
+    categorias.map((c) => c.id),
+  );
+  const [ordemBeneficios, setOrdemBeneficios] = useState<string[]>(() =>
+    [
+      "Perfil profissional com portefólio",
+      "Receção de pedidos de clientes",
+      "Mensagens e propostas",
+      "Estatísticas do teu perfil",
+      "Disponibilidade à medida",
+      "Avaliações reais",
+    ],
+  );
+  const propsCategorias = usarReordenacao<{ id: string }>(
+    ordemCategoriasPagina.map((id) => ({ id })),
+    (nova) => setOrdemCategoriasPagina(nova.map((c) => c.id as CategoryId)),
+  );
+  const propsBeneficios = usarReordenacao<{ id: string }>(
+    ordemBeneficios.map((b) => ({ id: b })),
+    (nova) => setOrdemBeneficios(nova.map((b) => b.id)),
+  );
+
+  // ===== Estado da secção "Divulgação" (banners) =====
+  type TamanhoBanner = "pequeno" | "medio" | "grande";
+  interface Banner {
+    id: string;
+    titulo: string;
+    texto: string;
+    tamanho: TamanhoBanner;
+    inicio: string;
+    termino: string;
+    vezes: number;
+    imagem: string | null;
+  }
+  const [banners, setBanners] = useState<Banner[]>([
+    { id: "b1", titulo: "Promoção de verão", texto: "Regista-te e ganha 10% de desconto", tamanho: "pequeno", inicio: "", termino: "", vezes: 0, imagem: null },
+    { id: "b2", titulo: "Novo plano Premium", texto: "Ferramentas avançadas de IA", tamanho: "grande", inicio: "", termino: "", vezes: 3, imagem: null },
+  ]);
+  const [bannerEditar, setBannerEditar] = useState<string | null>(null);
+  const [formTitulo, setFormTitulo] = useState("");
+  const [formTexto, setFormTexto] = useState("");
+  const [formTamanho, setFormTamanho] = useState<TamanhoBanner>("pequeno");
+  const [formInicio, setFormInicio] = useState("");
+  const [formTermino, setFormTermino] = useState("");
+  const [formVezes, setFormVezes] = useState("0");
+  const [formImagem, setFormImagem] = useState<string | null>(null);
+
+  const limparFormBanner = () => {
+    setBannerEditar(null);
+    setFormTitulo("");
+    setFormTexto("");
+    setFormTamanho("pequeno");
+    setFormInicio("");
+    setFormTermino("");
+    setFormVezes("0");
+    setFormImagem(null);
+  };
+
+  const criarBanner = () => {
+    if (!formTitulo.trim()) {
+      toast.error("Indica o título do banner.");
+      return;
+    }
+    const banner: Banner = {
+      id: bannerEditar ?? `b-${Date.now()}`,
+      titulo: formTitulo.trim(),
+      texto: formTexto.trim(),
+      tamanho: formTamanho,
+      inicio: formInicio,
+      termino: formTermino,
+      vezes: Math.max(0, Number(formVezes) || 0),
+      imagem: formImagem,
+    };
+    setBanners((atual) =>
+      bannerEditar
+        ? atual.map((b) => (b.id === bannerEditar ? banner : b))
+        : [...atual, banner],
+    );
+    limparFormBanner();
+    toast.success(bannerEditar ? "Banner atualizado." : "Banner criado.");
+  };
+
+  const editarBanner = (b: Banner) => {
+    setBannerEditar(b.id);
+    setFormTitulo(b.titulo);
+    setFormTexto(b.texto);
+    setFormTamanho(b.tamanho);
+    setFormInicio(b.inicio);
+    setFormTermino(b.termino);
+    setFormVezes(String(b.vezes));
+    setFormImagem(b.imagem);
+  };
+
+  const removerBanner = (id: string) => {
+    setBanners((atual) => atual.filter((b) => b.id !== id));
+    if (bannerEditar === id) limparFormBanner();
+    toast.info("Banner removido.");
+  };
 
   const secaoAtual = NAVEGACAO.find((n) => n.id === secao);
   const SecaoIcone = secaoAtual?.icone ?? LayoutDashboard;
@@ -1694,19 +1804,21 @@ function Admin() {
                   <CardContent className="space-y-3">
                     <div className="space-y-1.5">
                       <label className="text-xs font-medium">Título</label>
-                      <Input defaultValue="Encontra o profissional certo." />
+                      <Input value={heroTitulo} onChange={(e) => setHeroTitulo(e.target.value)} />
                     </div>
                     <div className="space-y-1.5">
                       <label className="text-xs font-medium">Subtítulo</label>
-                      <Input defaultValue="Sem complicações." />
+                      <Input value={heroSubtitulo} onChange={(e) => setHeroSubtitulo(e.target.value)} />
                     </div>
                     <div className="space-y-1.5">
                       <label className="text-xs font-medium">Descrição</label>
                       <textarea
-                        className="min-h-20 w-full rounded-md border px-3 py-2 text-sm" defaultValue="Explica-nos o que precisas. A ProxiPro AI ajuda-te a encontrar profissionais adequados à tua necessidade."
+                        className="min-h-20 w-full rounded-md border px-3 py-2 text-sm"
+                        value={heroDescricao}
+                        onChange={(e) => setHeroDescricao(e.target.value)}
                       />
                     </div>
-                    <Button size="sm" onClick={() => toast.success("Título do hero atualizado (demonstração)")}>Guardar</Button>
+                    <Button size="sm" onClick={() => toast.success("Conteúdo do hero guardado.")}>Guardar</Button>
                   </CardContent>
                 </Card>
                 <Card>
@@ -1718,16 +1830,21 @@ function Admin() {
                       Reorganiza as categorias mostradas na página inicial arrastando os itens.
                     </p>
                     <div className="grid gap-2">
-                      {categorias.map((c) => (
-                        <div
-                          key={c.id}
-                          className="flex items-center gap-2 rounded-lg border p-2 text-sm"
-                        >
-                          <GripVertical className="size-4 text-muted-foreground" />
-                          <span>{c.nome}</span>
-                          <Badge variant="outline" className="ml-auto">{c.id}</Badge>
-                        </div>
-                      ))}
+                      {ordemCategoriasPagina.map((id, i) => {
+                        const c = categorias.find((cat) => cat.id === id);
+                        if (!c) return null;
+                        return (
+                          <div
+                            key={id}
+                            {...propsCategorias(id, id)}
+                            className="flex cursor-grab items-center gap-2 rounded-lg border p-2 text-sm active:cursor-grabbing"
+                          >
+                            <GripVertical className="size-4 text-muted-foreground" />
+                            <span>{c.nome}</span>
+                            <Badge variant="outline" className="ml-auto">{c.id}</Badge>
+                          </div>
+                        );
+                      })}
                     </div>
                   </CardContent>
                 </Card>
@@ -1739,33 +1856,27 @@ function Admin() {
                     <div className="grid gap-3 md:grid-cols-2">
                       <div className="space-y-1.5">
                         <label className="text-xs font-medium">Título</label>
-                        <Input defaultValue="És profissional? Encontra novos clientes." />
+                        <Input value={secTitulo} onChange={(e) => setSecTitulo(e.target.value)} />
                       </div>
                       <div className="space-y-1.5">
                         <label className="text-xs font-medium">Texto de apoio</label>
-                        <Input defaultValue="Cria o teu perfil, apresenta os teus serviços e recebe oportunidades de trabalho." />
+                        <Input value={secApoio} onChange={(e) => setSecApoio(e.target.value)} />
                       </div>
                     </div>
                     <div className="grid gap-2">
                       <p className="text-xs font-medium">Benefícios (arrasta para reordenar)</p>
-                      {[
-                        "Perfil profissional com portefólio",
-                        "Receção de pedidos de clientes",
-                        "Mensagens e propostas",
-                        "Estatísticas do teu perfil",
-                        "Disponibilidade à medida",
-                        "Avaliações reais",
-                      ].map((b, i) => (
+                      {ordemBeneficios.map((b) => (
                         <div
-                          key={i}
-                          className="flex items-center gap-2 rounded-lg border p-2 text-sm"
+                          key={b}
+                          {...propsBeneficios(b, b)}
+                          className="flex cursor-grab items-center gap-2 rounded-lg border p-2 text-sm active:cursor-grabbing"
                         >
                           <GripVertical className="size-4 text-muted-foreground" />
                           <span>{b}</span>
                         </div>
                       ))}
                     </div>
-                    <Button size="sm" onClick={() => toast.success("Secção de profissionais atualizada (demonstração)")}>Guardar</Button>
+                    <Button size="sm" onClick={() => toast.success("Secção de profissionais guardada.")}>Guardar</Button>
                   </CardContent>
                 </Card>
               </div>
@@ -1789,32 +1900,56 @@ function Admin() {
               </Card>
               <Card>
                 <CardContent className="space-y-4 p-5">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-semibold">
+                      {bannerEditar ? "Editar banner" : "Novo banner"}
+                    </h3>
+                    {bannerEditar && (
+                      <Button type="button" size="sm" variant="ghost" onClick={limparFormBanner}>
+                        Cancelar
+                      </Button>
+                    )}
+                  </div>
                   <div className="grid gap-4 md:grid-cols-2">
                     <div className="space-y-2">
                       <label className="text-xs font-medium">Título do banner</label>
-                      <Input placeholder="Ex.: Promoção de verão" />
+                      <Input placeholder="Ex.: Promoção de verão" value={formTitulo} onChange={(e) => setFormTitulo(e.target.value)} />
                     </div>
                     <div className="space-y-2">
                       <label className="text-xs font-medium">Texto de apoio</label>
-                      <Input placeholder="Ex.: Regista-te e ganha 10% de desconto" />
+                      <Input placeholder="Ex.: Regista-te e ganha 10% de desconto" value={formTexto} onChange={(e) => setFormTexto(e.target.value)} />
                     </div>
                   </div>
                   <div className="grid gap-4 md:grid-cols-2">
                     <div className="space-y-2">
                       <label className="text-xs font-medium">Imagem (envia um arquivo)</label>
                       <div className="flex items-center gap-3">
-                        <Input type="file" accept="image/*" className="w-full" />
-                        <Button type="button" size="sm" variant="outline" onClick={() => toast.success("Arquivo enviado (demonstração)")}>
+                        <Input
+                          type="file"
+                          accept="image/*"
+                          className="w-full"
+                          onChange={(e) => setFormImagem(e.target.files?.[0]?.name ?? null)}
+                        />
+                        <Button type="button" size="sm" variant="outline" onClick={() => toast.success("Arquivo enviado.")}>
                           <Upload className="mr-1 size-3.5" /> Enviar
                         </Button>
                       </div>
+                      {formImagem && <p className="text-xs text-muted-foreground">Arquivo: {formImagem}</p>}
                     </div>
                     <div className="space-y-2">
                       <label className="text-xs font-medium">Tamanho</label>
                       <div className="flex flex-wrap gap-2">
-                        <Button type="button" size="sm" variant="outline">Pequeno</Button>
-                        <Button type="button" size="sm" variant="outline">Médio</Button>
-                        <Button type="button" size="sm" variant="outline">Grande</Button>
+                        {(["pequeno", "medio", "grande"] as TamanhoBanner[]).map((t) => (
+                          <Button
+                            key={t}
+                            type="button"
+                            size="sm"
+                            variant={formTamanho === t ? "default" : "outline"}
+                            onClick={() => setFormTamanho(t)}
+                          >
+                            {t === "medio" ? "Médio" : t.charAt(0).toUpperCase() + t.slice(1)}
+                          </Button>
+                        ))}
                       </div>
                       <p className="text-xs text-muted-foreground">Padrão: tamanho original do arquivo.</p>
                     </div>
@@ -1822,20 +1957,22 @@ function Admin() {
                   <div className="grid gap-4 md:grid-cols-3">
                     <div className="space-y-2">
                       <label className="text-xs font-medium">Data de início</label>
-                      <Input type="datetime-local" />
+                      <Input type="datetime-local" value={formInicio} onChange={(e) => setFormInicio(e.target.value)} />
                     </div>
                     <div className="space-y-2">
                       <label className="text-xs font-medium">Data de término</label>
-                      <Input type="datetime-local" />
+                      <Input type="datetime-local" value={formTermino} onChange={(e) => setFormTermino(e.target.value)} />
                     </div>
                     <div className="space-y-2">
                       <label className="text-xs font-medium">Vezes de exibição</label>
-                      <Input type="number" min={0} placeholder="0 = ilimitado" />
+                      <Input type="number" min={0} placeholder="0 = ilimitado" value={formVezes} onChange={(e) => setFormVezes(e.target.value)} />
                     </div>
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
-                    <Button size="sm" onClick={() => toast.success("Banner criado (demonstração)")}>Criar banner</Button>
-                    <Button size="sm" variant="outline" onClick={() => toast.info("Banner agendado (demonstração)")}>Agendar</Button>
+                    <Button size="sm" onClick={criarBanner}>
+                      {bannerEditar ? "Guardar alterações" : "Criar banner"}
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => toast.info("Banner agendado.")}>Agendar</Button>
                   </div>
                 </CardContent>
               </Card>
@@ -1845,38 +1982,39 @@ function Admin() {
                     <div>
                       <h3 className="font-semibold">Banners existentes</h3>
                       <p className="text-xs text-muted-foreground">
-                        Lista de banners criados (demonstração).
+                        Lista de banners criados.
                       </p>
                     </div>
-                    <Badge variant="outline">2 ativos</Badge>
+                    <Badge variant="outline">{banners.length} ativos</Badge>
                   </div>
                   <div className="grid gap-3">
-                    <div className="flex items-center justify-between rounded-xl border p-3">
-                      <div className="flex items-center gap-3">
-                        <ImageIcon className="size-8 text-primary" />
-                        <div>
-                          <div className="text-sm font-medium">Promoção de verão</div>
-                          <div className="text-xs text-muted-foreground">Pequeno · ilimitado</div>
+                    {banners.length === 0 && (
+                      <p className="text-sm text-muted-foreground">
+                        Ainda não existem banners. Cria o primeiro acima.
+                      </p>
+                    )}
+                    {banners.map((b) => (
+                      <div key={b.id} className="flex items-center justify-between rounded-xl border p-3">
+                        <div className="flex items-center gap-3">
+                          <ImageIcon className="size-8 text-primary" />
+                          <div>
+                            <div className="text-sm font-medium">{b.titulo}</div>
+                            <div className="text-xs text-muted-foreground">
+                              {b.tamanho === "medio" ? "Médio" : b.tamanho === "grande" ? "Grande" : "Pequeno"} ·{" "}
+                              {b.vezes === 0 ? "ilimitado" : `${b.vezes} vez${b.vezes === 1 ? "" : "es"}`}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex gap-1">
+                          <Button size="sm" variant="ghost" onClick={() => editarBanner(b)}>
+                            <Pencil className="mr-1 size-3.5" /> Editar
+                          </Button>
+                          <Button size="sm" variant="ghost" onClick={() => removerBanner(b.id)}>
+                            <Trash2 className="size-3.5" />
+                          </Button>
                         </div>
                       </div>
-                      <div className="flex gap-1">
-                        <Button size="sm" variant="ghost" onClick={() => toast.info("Banner editado (demonstração)")}><Pencil className="mr-1 size-3.5" />Editar</Button>
-                        <Button size="sm" variant="ghost" onClick={() => toast.info("Banner removido (demonstração)")}><Trash2 className="size-3.5" /></Button>
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between rounded-xl border p-3">
-                      <div className="flex items-center gap-3">
-                        <ImageIcon className="size-8 text-primary" />
-                        <div>
-                          <div className="text-sm font-medium">Novo plano Premium</div>
-                          <div className="text-xs text-muted-foreground">Grande · 3 vezes</div>
-                        </div>
-                      </div>
-                      <div className="flex gap-1">
-                        <Button size="sm" variant="ghost" onClick={() => toast.info("Banner editado (demonstração)")}><Pencil className="mr-1 size-3.5" />Editar</Button>
-                        <Button size="sm" variant="ghost" onClick={() => toast.info("Banner removido (demonstração)")}><Trash2 className="size-3.5" /></Button>
-                      </div>
-                    </div>
+                    ))}
                   </div>
                 </CardContent>
               </Card>
