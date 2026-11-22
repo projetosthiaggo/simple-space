@@ -71,6 +71,7 @@ function Index() {
         subtitulo={pagina.heroSubtitulo}
         descricao={pagina.heroDescricao}
       />
+      <SecaoImagemHero />
       <SecaoCategorias ordem={pagina.ordemCategorias} />
       <ProfissionaisProximos />
       <SecaoComoFunciona />
@@ -276,6 +277,58 @@ function Hero({
               </Link>
             </p>
           </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function SecaoImagemHero() {
+  return (
+    <section className="relative mx-auto max-w-7xl px-4 md:px-6 animate-fade-in">
+      <div className="overflow-hidden rounded-3xl border bg-card shadow-lg animate-slide-up">
+        <img
+          src="/images/profissionais-homepage.jpg"
+          alt="Profissional em ação a reparar canalização debaixo de um lavatório"
+          className="h-[420px] w-full object-cover md:h-[520px]"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-primary/80 via-primary/20 to-transparent" />
+        <div className="absolute bottom-0 left-0 p-6 md:p-10">
+          <Badge variant="outline" className="border-primary-foreground/40 bg-primary/20 text-primary-foreground backdrop-blur">
+            Serviços reais perto de ti
+          </Badge>
+          <h3 className="mt-3 max-w-xl text-2xl font-bold text-primary-foreground md:text-3xl">
+            Profissionais qualificados, prontos para resolver
+          </h3>
+          <p className="mt-2 max-w-md text-sm text-primary-foreground/80">
+            Vedações, eletricidade, pintura e muito mais — com contacto direto e acompanhamento até ao fim.
+          </p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function SecaoImagemHeroOriginal() {
+  return (
+    <section className="relative mx-auto max-w-7xl px-4 md:px-6 animate-fade-in">
+      <div className="overflow-hidden rounded-3xl border bg-card shadow-lg animate-slide-up">
+        <img
+          src="/images/profissionais-homepage.jpg"
+          alt="Profissional em ação a reparar canalização debaixo de um lavatório"
+          className="h-[420px] w-full object-cover md:h-[520px]"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-primary/80 via-primary/20 to-transparent" />
+        <div className="absolute bottom-0 left-0 p-6 md:p-10">
+          <Badge variant="outline" className="border-primary-foreground/40 bg-primary/20 text-primary-foreground backdrop-blur">
+            Serviços reais perto de ti
+          </Badge>
+          <h3 className="mt-3 max-w-xl text-2xl font-bold text-primary-foreground md:text-3xl">
+            Profissionais qualificados, prontos para resolver
+          </h3>
+          <p className="mt-2 max-w-md text-sm text-primary-foreground/80">
+            Vedações, eletricidade, pintura e muito mais — com contacto direto e acompanhamento até ao fim.
+          </p>
         </div>
       </div>
     </section>
