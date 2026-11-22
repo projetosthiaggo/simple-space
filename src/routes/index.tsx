@@ -32,6 +32,7 @@ import { Badge } from "@/components/ui/badge";
 import { useState, useEffect } from "react";
 import { categories } from "@/data/plataforma";
 import { lerPaginaInicial, lerBanners, type Banner } from "@/lib/persistencia-admin";
+import { ProfissionaisProximos } from "@/components/ProfissionaisProximos";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -71,6 +72,7 @@ function Index() {
         descricao={pagina.heroDescricao}
       />
       <SecaoCategorias ordem={pagina.ordemCategorias} />
+      <ProfissionaisProximos />
       <SecaoComoFunciona />
       <SecaoProfissionais
         titulo={pagina.secTitulo}
