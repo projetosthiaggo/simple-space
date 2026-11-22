@@ -10,33 +10,284 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ProfissionaisRouteImport } from './routes/profissionais'
+import { Route as ProfissionaisByIdRouteImport } from './routes/profissionais/$id'
+import { Route as AssistenteRouteImport } from './routes/assistente'
+import { Route as RegistoRouteImport } from './routes/registo'
+import { Route as EntrarRouteImport } from './routes/entrar'
+import { Route as RecuperarPalavraPassaRouteImport } from './routes/recuperar-palavra-passe'
+import { Route as CategoriasRouteImport } from './routes/categorias'
+import { Route as ComoFuncionaRouteImport } from './routes/como-funciona'
+import { Route as ParaProfissionaisRouteImport } from './routes/para-profissionais'
+import { Route as PedidoRouteImport } from './routes/pedido'
+import { Route as AdminRouteImport } from './routes/admin'
+import { Route as MensagensRouteImport } from './routes/mensagens'
+import { Route as PainelProfissionalRouteImport } from './routes/painel-profissional'
+import { Route as PainelClienteRouteImport } from './routes/painel-cliente'
+import { Route as FaqRouteImport } from './routes/faq'
+import { Route as PrivacidadeRouteImport } from './routes/privacidade'
+import { Route as ReclamacoesRouteImport } from './routes/reclamacoes'
+import { Route as ContactosRouteImport } from './routes/contactos'
+import { Route as TermosRouteImport } from './routes/termos'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProfissionaisRoute = ProfissionaisRouteImport.update({
+  id: '/profissionais',
+  path: '/profissionais',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfissionaisByIdRoute = ProfissionaisByIdRouteImport.update({
+  id: '/profissionais/$id',
+  path: '/profissionais/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AssistenteRoute = AssistenteRouteImport.update({
+  id: '/assistente',
+  path: '/assistente',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RegistoRoute = RegistoRouteImport.update({
+  id: '/registo',
+  path: '/registo',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EntrarRoute = EntrarRouteImport.update({
+  id: '/entrar',
+  path: '/entrar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RecuperarPalavraPassaRoute = RecuperarPalavraPassaRouteImport.update({
+  id: '/recuperar-palavra-passe',
+  path: '/recuperar-palavra-passe',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ComoFuncionaRoute = ComoFuncionaRouteImport.update({
+  id: '/como-funciona',
+  path: '/como-funciona',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CategoriasRoute = CategoriasRouteImport.update({
+  id: '/categorias',
+  path: '/categorias',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ParaProfissionaisRoute = ParaProfissionaisRouteImport.update({
+  id: '/para-profissionais',
+  path: '/para-profissionais',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PedidoRoute = PedidoRouteImport.update({
+  id: '/pedido',
+  path: '/pedido',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MensagensRoute = MensagensRouteImport.update({
+  id: '/mensagens',
+  path: '/mensagens',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PainelProfissionalRoute = PainelProfissionalRouteImport.update({
+  id: '/painel-profissional',
+  path: '/painel-profissional',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PainelClienteRoute = PainelClienteRouteImport.update({
+  id: '/painel-cliente',
+  path: '/painel-cliente',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FaqRoute = FaqRouteImport.update({
+  id: '/faq',
+  path: '/faq',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacidadeRoute = PrivacidadeRouteImport.update({
+  id: '/privacidade',
+  path: '/privacidade',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReclamacoesRoute = ReclamacoesRouteImport.update({
+  id: '/reclamacoes',
+  path: '/reclamacoes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContactosRoute = ContactosRouteImport.update({
+  id: '/contactos',
+  path: '/contactos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TermosRoute = TermosRouteImport.update({
+  id: '/termos',
+  path: '/termos',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
+  '/assistente': typeof AssistenteRoute
+  '/categorias': typeof CategoriasRoute
+  '/como-funciona': typeof ComoFuncionaRoute
+  '/contactos': typeof ContactosRoute
+  '/entrar': typeof EntrarRoute
+  '/faq': typeof FaqRoute
+  '/mensagens': typeof MensagensRoute
+  '/painel-cliente': typeof PainelClienteRoute
+  '/painel-profissional': typeof PainelProfissionalRoute
+  '/para-profissionais': typeof ParaProfissionaisRoute
+  '/pedido': typeof PedidoRoute
+  '/privacidade': typeof PrivacidadeRoute
+  '/profissionais': typeof ProfissionaisRoute
+  '/profissionais/$id': typeof ProfissionaisByIdRoute
+  '/recuperar-palavra-passe': typeof RecuperarPalavraPassaRoute
+  '/reclamacoes': typeof ReclamacoesRoute
+  '/registo': typeof RegistoRoute
+  '/termos': typeof TermosRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
+  '/assistente': typeof AssistenteRoute
+  '/categorias': typeof CategoriasRoute
+  '/como-funciona': typeof ComoFuncionaRoute
+  '/contactos': typeof ContactosRoute
+  '/entrar': typeof EntrarRoute
+  '/faq': typeof FaqRoute
+  '/mensagens': typeof MensagensRoute
+  '/painel-cliente': typeof PainelClienteRoute
+  '/painel-profissional': typeof PainelProfissionalRoute
+  '/para-profissionais': typeof ParaProfissionaisRoute
+  '/pedido': typeof PedidoRoute
+  '/privacidade': typeof PrivacidadeRoute
+  '/profissionais': typeof ProfissionaisRoute
+  '/profissionais/$id': typeof ProfissionaisByIdRoute
+  '/recuperar-palavra-passe': typeof RecuperarPalavraPassaRoute
+  '/reclamacoes': typeof ReclamacoesRoute
+  '/registo': typeof RegistoRoute
+  '/termos': typeof TermosRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
+  '/assistente': typeof AssistenteRoute
+  '/categorias': typeof CategoriasRoute
+  '/como-funciona': typeof ComoFuncionaRoute
+  '/contactos': typeof ContactosRoute
+  '/entrar': typeof EntrarRoute
+  '/faq': typeof FaqRoute
+  '/mensagens': typeof MensagensRoute
+  '/painel-cliente': typeof PainelClienteRoute
+  '/painel-profissional': typeof PainelProfissionalRoute
+  '/para-profissionais': typeof ParaProfissionaisRoute
+  '/pedido': typeof PedidoRoute
+  '/privacidade': typeof PrivacidadeRoute
+  '/profissionais': typeof ProfissionaisRoute
+  '/profissionais/$id': typeof ProfissionaisByIdRoute
+  '/recuperar-palavra-passe': typeof RecuperarPalavraPassaRoute
+  '/reclamacoes': typeof ReclamacoesRoute
+  '/registo': typeof RegistoRoute
+  '/termos': typeof TermosRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/admin'
+    | '/assistente'
+    | '/categorias'
+    | '/como-funciona'
+    | '/contactos'
+    | '/entrar'
+    | '/faq'
+    | '/mensagens'
+    | '/painel-cliente'
+    | '/painel-profissional'
+    | '/para-profissionais'
+    | '/pedido'
+    | '/privacidade'
+    | '/profissionais'
+    | '/profissionais/$id'
+    | '/recuperar-palavra-passe'
+    | '/reclamacoes'
+    | '/registo'
+    | '/termos'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/admin'
+    | '/assistente'
+    | '/categorias'
+    | '/como-funciona'
+    | '/contactos'
+    | '/entrar'
+    | '/faq'
+    | '/mensagens'
+    | '/painel-cliente'
+    | '/painel-profissional'
+    | '/para-profissionais'
+    | '/pedido'
+    | '/privacidade'
+    | '/profissionais'
+    | '/profissionais/$id'
+    | '/recuperar-palavra-passe'
+    | '/reclamacoes'
+    | '/registo'
+    | '/termos'
+  id:
+    | '__root__'
+    | '/'
+    | '/admin'
+    | '/assistente'
+    | '/categorias'
+    | '/como-funciona'
+    | '/contactos'
+    | '/entrar'
+    | '/faq'
+    | '/mensagens'
+    | '/painel-cliente'
+    | '/painel-profissional'
+    | '/para-profissionais'
+    | '/pedido'
+    | '/privacidade'
+    | '/profissionais'
+    | '/profissionais/$id'
+    | '/recuperar-palavra-passe'
+    | '/reclamacoes'
+    | '/registo'
+    | '/termos'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRoute
+  AssistenteRoute: typeof AssistenteRoute
+  CategoriasRoute: typeof CategoriasRoute
+  ComoFuncionaRoute: typeof ComoFuncionaRoute
+  ContactosRoute: typeof ContactosRoute
+  EntrarRoute: typeof EntrarRoute
+  FaqRoute: typeof FaqRoute
+  MensagensRoute: typeof MensagensRoute
+  PainelClienteRoute: typeof PainelClienteRoute
+  PainelProfissionalRoute: typeof PainelProfissionalRoute
+  ParaProfissionaisRoute: typeof ParaProfissionaisRoute
+  PedidoRoute: typeof PedidoRoute
+  PrivacidadeRoute: typeof PrivacidadeRoute
+  ProfissionaisRoute: typeof ProfissionaisRoute
+  ProfissionaisByIdRoute: typeof ProfissionaisByIdRoute
+  RecuperarPalavraPassaRoute: typeof RecuperarPalavraPassaRoute
+  ReclamacoesRoute: typeof ReclamacoesRoute
+  RegistoRoute: typeof RegistoRoute
+  TermosRoute: typeof TermosRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +299,163 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/assistente': {
+      id: '/assistente'
+      path: '/assistente'
+      fullPath: '/assistente'
+      preLoaderRoute: typeof AssistenteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/categorias': {
+      id: '/categorias'
+      path: '/categorias'
+      fullPath: '/categorias'
+      preLoaderRoute: typeof CategoriasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/como-funciona': {
+      id: '/como-funciona'
+      path: '/como-funciona'
+      fullPath: '/como-funciona'
+      preLoaderRoute: typeof ComoFuncionaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/contactos': {
+      id: '/contactos'
+      path: '/contactos'
+      fullPath: '/contactos'
+      preLoaderRoute: typeof ContactosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/entrar': {
+      id: '/entrar'
+      path: '/entrar'
+      fullPath: '/entrar'
+      preLoaderRoute: typeof EntrarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/faq': {
+      id: '/faq'
+      path: '/faq'
+      fullPath: '/faq'
+      preLoaderRoute: typeof FaqRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mensagens': {
+      id: '/mensagens'
+      path: '/mensagens'
+      fullPath: '/mensagens'
+      preLoaderRoute: typeof MensagensRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/painel-cliente': {
+      id: '/painel-cliente'
+      path: '/painel-cliente'
+      fullPath: '/painel-cliente'
+      preLoaderRoute: typeof PainelClienteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/painel-profissional': {
+      id: '/painel-profissional'
+      path: '/painel-profissional'
+      fullPath: '/painel-profissional'
+      preLoaderRoute: typeof PainelProfissionalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/para-profissionais': {
+      id: '/para-profissionais'
+      path: '/para-profissionais'
+      fullPath: '/para-profissionais'
+      preLoaderRoute: typeof ParaProfissionaisRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pedido': {
+      id: '/pedido'
+      path: '/pedido'
+      fullPath: '/pedido'
+      preLoaderRoute: typeof PedidoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacidade': {
+      id: '/privacidade'
+      path: '/privacidade'
+      fullPath: '/privacidade'
+      preLoaderRoute: typeof PrivacidadeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profissionais': {
+      id: '/profissionais'
+      path: '/profissionais'
+      fullPath: '/profissionais'
+      preLoaderRoute: typeof ProfissionaisRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profissionais/$id': {
+      id: '/profissionais/$id'
+      path: '/profissionais/$id'
+      fullPath: '/profissionais/$id'
+      preLoaderRoute: typeof ProfissionaisByIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/recuperar-palavra-passe': {
+      id: '/recuperar-palavra-passe'
+      path: '/recuperar-palavra-passe'
+      fullPath: '/recuperar-palavra-passe'
+      preLoaderRoute: typeof RecuperarPalavraPassaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reclamacoes': {
+      id: '/reclamacoes'
+      path: '/reclamacoes'
+      fullPath: '/reclamacoes'
+      preLoaderRoute: typeof ReclamacoesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/registo': {
+      id: '/registo'
+      path: '/registo'
+      fullPath: '/registo'
+      preLoaderRoute: typeof RegistoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/termos': {
+      id: '/termos'
+      path: '/termos'
+      fullPath: '/termos'
+      preLoaderRoute: typeof TermosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRoute,
+  AssistenteRoute: AssistenteRoute,
+  CategoriasRoute: CategoriasRoute,
+  ComoFuncionaRoute: ComoFuncionaRoute,
+  ContactosRoute: ContactosRoute,
+  EntrarRoute: EntrarRoute,
+  FaqRoute: FaqRoute,
+  MensagensRoute: MensagensRoute,
+  PainelClienteRoute: PainelClienteRoute,
+  PainelProfissionalRoute: PainelProfissionalRoute,
+  ParaProfissionaisRoute: ParaProfissionaisRoute,
+  PedidoRoute: PedidoRoute,
+  PrivacidadeRoute: PrivacidadeRoute,
+  ProfissionaisRoute: ProfissionaisRoute,
+  ProfissionaisByIdRoute: ProfissionaisByIdRoute,
+  RecuperarPalavraPassaRoute: RecuperarPalavraPassaRoute,
+  ReclamacoesRoute: ReclamacoesRoute,
+  RegistoRoute: RegistoRoute,
+  TermosRoute: TermosRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
