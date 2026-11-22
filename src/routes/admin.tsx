@@ -1826,7 +1826,7 @@ function Admin() {
                         onChange={(e) => setHeroDescricao(e.target.value)}
                       />
                     </div>
-                    <Button size="sm" onClick={() => { persistirPaginaInicial(); toast.success("Conteúdo do hero guardado."); }}>Guardar</Button>
+                    <Button size="sm" onClick={() => { gravarPaginaInicial({ heroTitulo, heroSubtitulo, heroDescricao, secTitulo, secApoio, ordemCategorias: ordemCategoriasPagina, ordemBeneficios }); toast.success("Conteúdo do hero guardado."); }}>Guardar</Button>
                   </CardContent>
                 </Card>
                 <Card>
@@ -1884,7 +1884,7 @@ function Admin() {
                         </div>
                       ))}
                     </div>
-                    <Button size="sm" onClick={() => { persistirPaginaInicial(); toast.success("Secção de profissionais guardada."); }}>Guardar</Button>
+                    <Button size="sm" onClick={() => { gravarPaginaInicial({ heroTitulo, heroSubtitulo, heroDescricao, secTitulo, secApoio, ordemCategorias: ordemCategoriasPagina, ordemBeneficios }); toast.success("Secção de profissionais guardada."); }}>Guardar</Button>
                   </CardContent>
                 </Card>
               </div>
