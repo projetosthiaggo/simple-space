@@ -49,7 +49,7 @@ function Categorias() {
         {categories.map((cat) => {
           const Icon = iconMap[cat.icone] ?? MoreHorizontal;
           return (
-            <Link key={cat.id} to={`/profissionais?categoria=${cat.id}`}>
+            <Link key={cat.id} to="/profissionais" search={{ categoria: cat.id }}>
               <Card className="h-full p-4 transition-colors hover:bg-accent">
                 <div className="flex items-start gap-3">
                   <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">

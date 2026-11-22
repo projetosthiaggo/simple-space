@@ -30,7 +30,7 @@ import { profissionais, pedidos, categories, distritos } from "@/data/plataforma
 import * as L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
-export const Route = createFileRoute("/admin-mapa")({
+export const Route = createFileRoute("/admin_/mapa")({
   component: AdminMapa,
 });
 
@@ -364,7 +364,7 @@ function AdminMapa() {
   const centrarEmLocalidade = (localidade: string) => {
     const coord = COORDENADAS[localidade];
     if (coord && mapRef.current) {
-      mapRef.current.panTo(coord, 11);
+      mapRef.current.setView(coord, 11);
     }
   };
 

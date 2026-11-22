@@ -37,7 +37,7 @@ function ParaProfissionais() {
         </p>
         <div className="mt-6 flex flex-wrap gap-3">
           <Button asChild size="lg">
-            <Link to="/registo?tipo=profissional">
+            <Link to="/registo" search={{ tipo: "profissional" }}>
               Registar como profissional
               <ArrowRight className="ml-2 size-4" />
             </Link>

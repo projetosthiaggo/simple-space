@@ -429,6 +429,16 @@ function Admin() {
   const [ordemResumo, setOrdemResumo] = useState<number[]>(() =>
     Array.from({ length: 8 }, (_, i) => i),
   );
+  const cardsResumo = [
+    { label: "Profissionais", valor: String(profissionais.length), delta: "+12%", icone: <Home className="size-5" /> },
+    { label: "Pedidos", valor: String(pedidos.length), delta: "+8%", icone: <Repeat className="size-5" /> },
+    { label: "Avaliações", valor: String(avaliacoesDemonstracao.length), delta: "+5%", icone: <Megaphone className="size-5" /> },
+    { label: "Categorias", valor: "12", delta: "+2", icone: <LayoutGrid className="size-5" /> },
+    { label: "Clientes ativos", valor: "248", delta: "+15%", icone: <LayoutList className="size-5" /> },
+    { label: "Mensagens", valor: "1 024", delta: "+9%", icone: <Upload className="size-5" /> },
+    { label: "Imagens", valor: "312", delta: "+4%", icone: <ImageIcon className="size-5" /> },
+    { label: "Taxa de resposta", valor: "92%", delta: "+1%", icone: <PlusZoom className="size-5" /> },
+  ];
   const [ordemProfissionais, setOrdemProfissionais] = useState<string[]>(() =>
     profissionais.map((p) => p.id),
   );
@@ -1950,7 +1960,7 @@ function Admin() {
               </p>
               <div className="flex flex-wrap gap-2">
                 <Button asChild size="sm" variant="outline">
-                  <Link to={`/profissionais/${detalhe.alvo.id}`}>
+                  <Link to="/profissionais/$id" params={{ id: detalhe.alvo.id }}>
                     <Eye className="mr-1 size-3.5" />
                     Abrir página do perfil
                   </Link>

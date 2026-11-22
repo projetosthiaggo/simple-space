@@ -182,7 +182,7 @@ function SecaoCategorias() {
         {categories.map((cat) => {
           const Icon = iconMap[cat.icone] ?? MoreHorizontal;
           return (
-            <Link key={cat.id} to={`/profissionais?categoria=${cat.id}`}>
+            <Link key={cat.id} to="/profissionais" search={{ categoria: cat.id }}>
               <Card className="h-full gap-2 transition-colors hover:bg-accent">
                 <CardHeader className="p-4 pb-0">
                   <div className="mb-3 flex size-10 items-center justify-center rounded-lg bg-primary text-primary-foreground">
@@ -290,7 +290,7 @@ function SecaoProfissionais() {
                 variant="secondary"
                 className="bg-accent-2 text-primary hover:bg-accent-2/90"
               >
-                <Link to="/registo?tipo=profissional">
+                <Link to="/registo" search={{ tipo: "profissional" }}>
                   Registar como profissional
                   <ArrowRight className="ml-2 size-4" />
                 </Link>

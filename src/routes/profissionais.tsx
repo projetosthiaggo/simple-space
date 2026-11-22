@@ -139,10 +139,10 @@ function CartaoProfissional({ p }: { p: Profissional }) {
 
         <div className="flex gap-2 pt-1">
           <Button asChild className="flex-1" size="sm">
-            <Link to={`/profissionais/${p.id}`}>Ver perfil</Link>
+            <Link to="/profissionais/$id" params={{ id: p.id }}>Ver perfil</Link>
           </Button>
           <Button asChild variant="outline" className="flex-1" size="sm">
-            <Link to={`/pedido?profissional=${p.id}`}>
+            <Link to="/pedido" search={{ profissional: p.id }}>
               Pedir orçamento
             </Link>
           </Button>

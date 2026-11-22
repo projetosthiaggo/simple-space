@@ -347,7 +347,7 @@ export function MapaPlataforma({
   const centrarEmLocalidade = (localidade: string) => {
     const coord = COORDENADAS[localidade];
     if (coord && mapRef.current) {
-      mapRef.current.panTo(coord, 11);
+      mapRef.current.setView(coord, 11);
     }
   };
 

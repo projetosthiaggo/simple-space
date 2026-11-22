@@ -90,7 +90,7 @@ function Mensagens() {
                     </p>
                   </div>
                   <Button asChild variant="ghost" size="sm">
-                    <Link to={`/profissionais/${atual.profissional.id}`}>
+                    <Link to="/profissionais/$id" params={{ id: atual.profissional.id }}>
                       Ver perfil
                     </Link>
                   </Button>

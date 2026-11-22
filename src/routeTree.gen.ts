@@ -11,7 +11,6 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/admin'
-import { Route as AdminMapaRouteImport } from './routes/admin-mapa'
 import { Route as AssistenteRouteImport } from './routes/assistente'
 import { Route as CategoriasRouteImport } from './routes/categorias'
 import { Route as ComoFuncionaRouteImport } from './routes/como-funciona'
@@ -29,7 +28,8 @@ import { Route as ReclamacoesRouteImport } from './routes/reclamacoes'
 import { Route as RecuperarPalavraPasseRouteImport } from './routes/recuperar-palavra-passe'
 import { Route as RegistoRouteImport } from './routes/registo'
 import { Route as TermosRouteImport } from './routes/termos'
-import { Route as ProfissionaisIdRouteImport } from './routes/profissionais/$id'
+import { Route as AdminMapaRouteImport } from './routes/admin_.mapa'
+import { Route as ProfissionaisIdRouteImport } from './routes/profissionais_.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -39,11 +39,6 @@ const IndexRoute = IndexRouteImport.update({
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AdminMapaRoute = AdminMapaRouteImport.update({
-  id: '/admin-mapa',
-  path: '/admin-mapa',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AssistenteRoute = AssistenteRouteImport.update({
@@ -131,16 +126,20 @@ const TermosRoute = TermosRouteImport.update({
   path: '/termos',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminMapaRoute = AdminMapaRouteImport.update({
+  id: '/admin_/mapa',
+  path: '/admin/mapa',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProfissionaisIdRoute = ProfissionaisIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => ProfissionaisRoute,
+  id: '/profissionais_/$id',
+  path: '/profissionais/$id',
+  getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
-  '/admin-mapa': typeof AdminMapaRoute
   '/assistente': typeof AssistenteRoute
   '/categorias': typeof CategoriasRoute
   '/como-funciona': typeof ComoFuncionaRoute
@@ -153,17 +152,17 @@ export interface FileRoutesByFullPath {
   '/para-profissionais': typeof ParaProfissionaisRoute
   '/pedido': typeof PedidoRoute
   '/privacidade': typeof PrivacidadeRoute
-  '/profissionais': typeof ProfissionaisRouteWithChildren
+  '/profissionais': typeof ProfissionaisRoute
   '/reclamacoes': typeof ReclamacoesRoute
   '/recuperar-palavra-passe': typeof RecuperarPalavraPasseRoute
   '/registo': typeof RegistoRoute
   '/termos': typeof TermosRoute
+  '/admin/mapa': typeof AdminMapaRoute
   '/profissionais/$id': typeof ProfissionaisIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
-  '/admin-mapa': typeof AdminMapaRoute
   '/assistente': typeof AssistenteRoute
   '/categorias': typeof CategoriasRoute
   '/como-funciona': typeof ComoFuncionaRoute
@@ -176,18 +175,18 @@ export interface FileRoutesByTo {
   '/para-profissionais': typeof ParaProfissionaisRoute
   '/pedido': typeof PedidoRoute
   '/privacidade': typeof PrivacidadeRoute
-  '/profissionais': typeof ProfissionaisRouteWithChildren
+  '/profissionais': typeof ProfissionaisRoute
   '/reclamacoes': typeof ReclamacoesRoute
   '/recuperar-palavra-passe': typeof RecuperarPalavraPasseRoute
   '/registo': typeof RegistoRoute
   '/termos': typeof TermosRoute
+  '/admin/mapa': typeof AdminMapaRoute
   '/profissionais/$id': typeof ProfissionaisIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
-  '/admin-mapa': typeof AdminMapaRoute
   '/assistente': typeof AssistenteRoute
   '/categorias': typeof CategoriasRoute
   '/como-funciona': typeof ComoFuncionaRoute
@@ -200,19 +199,19 @@ export interface FileRoutesById {
   '/para-profissionais': typeof ParaProfissionaisRoute
   '/pedido': typeof PedidoRoute
   '/privacidade': typeof PrivacidadeRoute
-  '/profissionais': typeof ProfissionaisRouteWithChildren
+  '/profissionais': typeof ProfissionaisRoute
   '/reclamacoes': typeof ReclamacoesRoute
   '/recuperar-palavra-passe': typeof RecuperarPalavraPasseRoute
   '/registo': typeof RegistoRoute
   '/termos': typeof TermosRoute
-  '/profissionais/$id': typeof ProfissionaisIdRoute
+  '/admin_/mapa': typeof AdminMapaRoute
+  '/profissionais_/$id': typeof ProfissionaisIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/admin'
-    | '/admin-mapa'
     | '/assistente'
     | '/categorias'
     | '/como-funciona'
@@ -230,12 +229,12 @@ export interface FileRouteTypes {
     | '/recuperar-palavra-passe'
     | '/registo'
     | '/termos'
+    | '/admin/mapa'
     | '/profissionais/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/admin'
-    | '/admin-mapa'
     | '/assistente'
     | '/categorias'
     | '/como-funciona'
@@ -253,12 +252,12 @@ export interface FileRouteTypes {
     | '/recuperar-palavra-passe'
     | '/registo'
     | '/termos'
+    | '/admin/mapa'
     | '/profissionais/$id'
   id:
     | '__root__'
     | '/'
     | '/admin'
-    | '/admin-mapa'
     | '/assistente'
     | '/categorias'
     | '/como-funciona'
@@ -276,13 +275,13 @@ export interface FileRouteTypes {
     | '/recuperar-palavra-passe'
     | '/registo'
     | '/termos'
-    | '/profissionais/$id'
+    | '/admin_/mapa'
+    | '/profissionais_/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
-  AdminMapaRoute: typeof AdminMapaRoute
   AssistenteRoute: typeof AssistenteRoute
   CategoriasRoute: typeof CategoriasRoute
   ComoFuncionaRoute: typeof ComoFuncionaRoute
@@ -295,11 +294,13 @@ export interface RootRouteChildren {
   ParaProfissionaisRoute: typeof ParaProfissionaisRoute
   PedidoRoute: typeof PedidoRoute
   PrivacidadeRoute: typeof PrivacidadeRoute
-  ProfissionaisRoute: typeof ProfissionaisRouteWithChildren
+  ProfissionaisRoute: typeof ProfissionaisRoute
   ReclamacoesRoute: typeof ReclamacoesRoute
   RecuperarPalavraPasseRoute: typeof RecuperarPalavraPasseRoute
   RegistoRoute: typeof RegistoRoute
   TermosRoute: typeof TermosRoute
+  AdminMapaRoute: typeof AdminMapaRoute
+  ProfissionaisIdRoute: typeof ProfissionaisIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -316,13 +317,6 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AdminRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin-mapa': {
-      id: '/admin-mapa'
-      path: '/admin-mapa'
-      fullPath: '/admin-mapa'
-      preLoaderRoute: typeof AdminMapaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/assistente': {
@@ -444,32 +438,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TermosRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/profissionais/$id': {
-      id: '/profissionais/$id'
-      path: '/$id'
+    '/admin_/mapa': {
+      id: '/admin_/mapa'
+      path: '/admin/mapa'
+      fullPath: '/admin/mapa'
+      preLoaderRoute: typeof AdminMapaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profissionais_/$id': {
+      id: '/profissionais_/$id'
+      path: '/profissionais/$id'
       fullPath: '/profissionais/$id'
       preLoaderRoute: typeof ProfissionaisIdRouteImport
-      parentRoute: typeof ProfissionaisRoute
+      parentRoute: typeof rootRouteImport
     }
   }
 }
 
-interface ProfissionaisRouteChildren {
-  ProfissionaisIdRoute: typeof ProfissionaisIdRoute
-}
-
-const ProfissionaisRouteChildren: ProfissionaisRouteChildren = {
-  ProfissionaisIdRoute: ProfissionaisIdRoute,
-}
-
-const ProfissionaisRouteWithChildren = ProfissionaisRoute._addFileChildren(
-  ProfissionaisRouteChildren,
-)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
-  AdminMapaRoute: AdminMapaRoute,
   AssistenteRoute: AssistenteRoute,
   CategoriasRoute: CategoriasRoute,
   ComoFuncionaRoute: ComoFuncionaRoute,
@@ -482,11 +470,13 @@ const rootRouteChildren: RootRouteChildren = {
   ParaProfissionaisRoute: ParaProfissionaisRoute,
   PedidoRoute: PedidoRoute,
   PrivacidadeRoute: PrivacidadeRoute,
-  ProfissionaisRoute: ProfissionaisRouteWithChildren,
+  ProfissionaisRoute: ProfissionaisRoute,
   ReclamacoesRoute: ReclamacoesRoute,
   RecuperarPalavraPasseRoute: RecuperarPalavraPasseRoute,
   RegistoRoute: RegistoRoute,
   TermosRoute: TermosRoute,
+  AdminMapaRoute: AdminMapaRoute,
+  ProfissionaisIdRoute: ProfissionaisIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

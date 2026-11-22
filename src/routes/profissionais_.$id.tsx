@@ -26,7 +26,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { profissionais } from "@/data/plataforma";
-export const Route = createFileRoute("/profissionais/$id")({
+export const Route = createFileRoute("/profissionais_/$id")({
   component: PerfilProfissional,
 });
 
@@ -209,7 +209,7 @@ function PerfilProfissional() {
               )}
               <div className="grid gap-2">
                 <Button asChild className="w-full">
-                  <Link to={`/pedido?profissional=${p.id}`}>
+                  <Link to="/pedido" search={{ profissional: p.id }}>
                     <Briefcase className="mr-2 size-4" />
                     Pedir orçamento
                   </Link>
